@@ -1,0 +1,139 @@
+Introduction to Deep learning (6.S191)
+
+Use to generate some Hype realistic images , media and even Photos .
+Image generation can be done from the Natural language .
+Neural network to train anaphor neural network . 
+
+Artificial Intelligence: Giving the ability to the computer that we have  . 
+Machine learning -> Ability to learn without getting programmed . 
+Deep learning -> Exact patterns from data using the Neural networks. 
+Machine learning helps in the decision making and the future predication based on the data  .
+ 
+
+Dl uses NN to process the data AND exact the patterns . 
+How to define the Face of the person in the Image  :
+Low level features -> lines and edges 
+mid -> eyes , nose and throat
+High level - > other facial accept and the structures 
+
+
+Three important aspects  :
+1.Big data 
+2.GPU parallelizable codes  
+3. software New model tool boxes  . 
+
+what is the basic idea in the neural network ? 
+The building block in the NN IS THE "perceptron". every single NN IS built using multiple perceptron's . Just like the human body is made up of the cell the nn is built of the perceptron's .
+
+Precptrons computes the information themselves and then connect together to make descision and the compute the datasets .
+
+NN is composed of  many neurons ->perceptrons  .
+
+Forward Propagation  :
+Let there be a NN and 
+This takes three inputs -> w1,w2,w3  as the weights and the x1,x2,xm as the inputs for the x .  
+the output Yc 
+
+Yc =  g(sum xi wi) from I = 1 to m 
+
+g here is A LINEAR activation function .  
+L = sum(xi wi) -> linear combination of the product of the inputs and the weights 
+X not  ->> bias 
+
+The bias term is the one that allows the Neural network to shift the activation function on the X axis , The sum of the linear combination of the x nd the weights and the G which is the Non linear activation function is getting shifted every time .  
+
+Using the linear algebra we can write this equation  as  :
+
+Y cap -> g( w0  + X (transposed)*W))
+where X = [x1] and W = [w1]
+	  [x2]	       [w2]
+	  [xm]	       [wn]
+
+The activation function is expressed in the form of the Matrix  . X(t)*W is the dot product  . Y cap is basically the Output .  
+
+
+
+Some of  the useful functions -> Sigmoid function is the commonly used activation func to get the probability distribution and train the NN  . 
+W not is the bias terms  
+
+
+What is the Sigmoid function ?? 
+It is the activation function(Non linear) that takes the input from -inf to inf and then squashes the output on the Y axis from 0 to 1 on the Y axis . very very common choice for the probability distribution and stuff . 
+
+
+Some of the Activation function  are -> 
+1.Sigmoid function 
+2.Hypberolic tangent 
+3.Rectified Linear Unit(RelU) 
+
+
+Corresponding TensorFlow codes for the above activation function :
+1.tf.math.sigmoid(z)
+2.tf.math.tanh(z)
+3.tf.nn.relu(z)
+
+
+All the activation function are always non linear .  
+
+More on RELU(rectified linear unit) :
+This is the activation function that is linear on ALL The inputs except x=0 it is non linear .  
+
+
+What is the use of the Non  linear activation  function  ?
+The use of the activation function is to :
+
+1.Introduce  Non linearities in the Network .  
+2.To train the Nn to deal with the Non linear data .  
+3.Exaplmwe to the above is the distribution / division of the red and the green data. 
+This is  a non linear problem and hence we use the Activation function to do the changes here .  
+THE ISSUE WIHT THE LINEAR FUNCTION IS -> LINEAR + LINEAR OUTPUTS LINEAR 
+Non linear function is used to approximate the arbitrary complex functions . 
+
+Also the issue with the Linear function is that they produces the linear decision on for the output  for the larger and the complex data sets , that lead to a potential issues . 
+
+Trained Neural Network :
+The bias and the weights are being given  . 
+
+
+what is the three important things in the train of the NN  ?
+1.dot product(wrights and the x)
+2.add the bias 
+3.apply Non linearity 
+
+That is what the Output for the y cap or for the single precptron. 
+Then the single precptron will output the number and then further computation goes on .  
+
+
+What is the feature space of the neural network  ?
+The output of the activation function , based on the  y for example sigmoid will give z <0 for y< 0.5  and z>0 and y >0.5 . This is called as the Feature space.
+This is for a very  simple neuron and in the reality there are a lot of inputs parameters for the neurons
+Also the above is for the equation . y = g(z) . 
+where the y  is the output  and the activation func for z input .
+ 
+
+z = wnot + xiwi (dot product) 
+
+
+How about a Multi output precptron   ?
+Multi output precptrons is basically a bunch of the neurons  and nothing else , earlier we had one and now we have two neurons ,  or maybe multiple neurons .  
+
+
+The collection of the neurons is called as the layer .and we  have to program a layer that is first step to train the NN .  
+
+
+Dense Layer -> When all the input In the neural network are connected to all the output the layer is called as the Dense Layer.
+
+
+What is the meaning  of the single Layer Neural Network  ?
+
+When there a set of the function that takes the input  , then these are converted to Y cap or the output , and this is very dense layer(all the input and the output are interconnected) then  this is middle layer  that  is basically the dot product + addition of  the bias is called as the Single / hidden layer of the NN . 
+
+
+The Non linearity function canbe very very much different within the hidden  layers . 
+One can be using the Sigmoid and the same function in the hidden layer can be RelU or maybe tan H  .
+
+ 
+What is a deep NN ? 
+There is intense stack of the layer on the top of the one another is called as  the deep neural network .There are more than 1 or maybe be several hidden layer in the system .  
+The final output is computed using the hierarchical deeper computation  . 
+

@@ -8,7 +8,7 @@ The hyperbolic tangent function, commonly referred to as tanh, is a widely used 
 
 The tanh function is defined as:
 
-\[ \tanh(x) = \frac{\sinh(x)}{\cosh(x)} = \frac{e^x - e^{-x}}{e^x + e^{-x}} \]
+\[ \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} \]
 
 where \( e \) is the base of the natural logarithm.
 

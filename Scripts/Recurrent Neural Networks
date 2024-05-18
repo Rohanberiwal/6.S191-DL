@@ -1,0 +1,65 @@
+Introduction to Deep learning (6.S191)
+
+Deep sequence modelling problems : Recurrent neural networks  , Transformers and  attention mechanism 
+
+Binary classification  has one of the two output only either a yes or a no  .
+In this there is a one to one output of the model  . However using the sequentially  modelling we can have many to one sentiment classification , for ex we can generate the words ,  we can generate para about  something and even image using the image captioning  models . 
+
+Many to many sequential modelling problem : 
+Convert a para into the a para of some other lang . 
+Multiple input and output is single .
+
+Neurons  with recurrence :
+In the  perceptron the input and the output are the real lines output , The output function only yield the real nums .
+
+Recurrent Neural Network  :
+Taking a feedforward nn , if we do the time stamping of the xi that are the input and then Sequentially do the computation such that , 
+x1-> y1 (time stamped 1)
+x2-> y2 (time stamped 2)
+xn-> yn (time stamped 3)
+then there  would be a data loss  as there could be potential dependency between  the x and  even between  the x and  the y as well  , or maybe between the hidden layer .  
+so the thing is we have to connect these  time stamped data  thought a function h that could be a variable or maybe a constant .  
+
+Y(t) = f(x(t)  , h(t-1))
+the output  of the perceptron becomes a output function  for the x and the h that is the variable  that we are using .  
+ what do we call the x and the h(t-1) ?
+ The x(t) is the input at the t the time stamp and  the h(t-1) is  the past memory  . 
+Y(t) is the normal output . 
+
+what is the recurrent neural network ?
+In the recurrent neural network is based on the concept of the recurrent cell  , where the output function of the Y(t) is basically a function of the current input   and the past memory that is H(T-1) . The state is passed on recursively from the one state to the other  until the t-th iteration is completed the and output for then Y th neuron is done .
+
+all in all the output of the neuron is the product of the current and the past memory that are the previous time stamps  .  the output are again connected together and  then passed on again further on to get the output .  
+
+Even in the recurrent neural network the output function is a recursive function  that is dependent on the x and the h .  
+
+
+RNN have a state at the each of the time stamps , these are updated at each of the time step as the sequence and  this is  processed at time . 
+
+Cell state h(t) = fw(x t , h(t-1)) // recurrence relation for the recurrent nn  
+
+he h t  the variable for the neuron at the t tht time stamped is called as the cell state .
+ 
+fw is the  function with the weights W . 
+the old state is the H(t-1) that is the past mem. 
+
+ what are the steps to update the hidden state  and the get the output for the RNN  ?
+
+STEP 1 : write the tf code 
+step 2  : update the hidden state based on the Activation func 
+
+for example for the hyper tangent activation func , we can do the updating  of the wrights based on :
+
+1.H(t) (Cell state) = tan h(W*h(t-1) + W*x(t))
+where the W is the transpose  of the weight matrix this is just  for to get the next cell state . 
+This recurrence or the cell state finding depend on the type of the activation function being used  m if we use the relU  or the sigmoid the output  func is the  func of the activation purely .
+
+
+what all is happing in the above H(T) cell state  ?
+In the above we  have multiplied the old state or the past mem with the  weight Transposed matrix and the current state with the weight again . This is just  to get the output for cell state . 
+
+Things to Note  :
+The RNN weight matrix is always difference in the time stamped , like each of the matrix would  have different time stamp at each of the point  .
+
+The above connect the RNN from the base to the Hidden layer and  there wont be the output for the Final layer ,  for the final layer the output function is  :
+y(t) =Activation(W h(y)⋅h(t) + b(t))

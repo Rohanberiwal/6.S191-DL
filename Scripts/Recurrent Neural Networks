@@ -63,3 +63,28 @@ The RNN weight matrix is always difference in the time stamped , like each of th
 
 The above connect the RNN from the base to the Hidden layer and  there wont be the output for the Final layer ,  for the final layer the output function is  :
 y(t) =Activation(W h(y)⋅h(t) + b(t))
+
+what is the key step in te RNN computation  ?
+The main steps include  :
+step 1 : making the RNN weights matrixs ,  the three matrix those are -> weight matrix , H(t-1) the old stamp matrix annd the current computaiton matrix  for the x(t) .
+The very very first step is the initliziation of the matrix  .
+
+what is the second step ?  
+Tne step2 is the makign  a call() function or the caller function thta tell about   how our RNN WWILL be making the predications.  The call function takes the hidden layer equation , that  and then makes the updates or the same  in the hidden  layer .  
+
+Step3 : doing the computasiton based on the activatiom fucntion of tge NN and then apply  the non linearty and then the updation  of the H(T) AND  so  on recursively . 
+
+BuiltIn rnn also wwe can use  :
+import tensorflow as tf 
+tf.keras.layers.SimpleRnn(rnn_units)
+
+RNN design from the Scratch   :
+Some of the important things that we have to keep in mind forthe sequernce modelling 
+
+To model sequences , we need to  :
+1. handle variable length sequences .  
+2.track  long term dependenciues 
+3.Maintian the order  .
+4.share the paramaters across the sequences . 
+
+Encoding Language for A neural network :

@@ -1,7 +1,6 @@
 # Hyperbolic Tangent (Tanh) Activation Function in Deep Learning
 
 ## Introduction
-
 The hyperbolic tangent function, commonly referred to as tanh, is a widely used activation function in neural networks. It maps input values to a range between -1 and 1, which helps in normalizing the output of each neuron.
 
 ## Definition and Mathematical Formulation

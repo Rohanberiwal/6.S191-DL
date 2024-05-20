@@ -197,3 +197,69 @@ Define layer to do the processing of the Output :
 
 what is  the properties of the SoftMax that  makes it suitable ?
 The main properties is that it is used for the output of the last layer in  the NN , also this is used  to get the sum output of 1 overall ,  like if we sum the output of each of the neuron/perceptron in the output  layer the output  is 1 . It also squashes the output between the 0 and 1 in the output layer .
+
+Application of the several Layers 
+1.Object detection : THESE ARE THE CLASSIFICATION PORBLEMS . 
+What is the output that we  get from the object detection : In out case this is a Classification problem :
+
+Image -> CNN  > yes it  has cancer cell  / No there are no cancer cell in this \
+
+overall image -> CNN -> class label 
+
+More on our research -> Mitosis in the histopathology 
+IN OUR RESEARHC WE MIGHT WNAT TO FIND OUT IF WE HAVE THE the cancerous cell  or not , hence  to find  this we gave to pass this to  CNN and the cell  here is a continuous value problem here  now  In this continuous value pr9oble we have to find the probability of the mitosis in the the report of  either the cancerous   cell or  the non cancerous cell  .
+
+Over all the problem  is still a classification problem , the output  that  if the mitosis is happify in eh cancerous cell or in the normal cell .
+
+The above is the localization ,  image detection and the classification problem overall .
+
+
+
+Naïve solution of the object detection :
+Take the part of the cell / full cell and then pass the cell into the neural network to find out if the cell has the cancer cell or not .
+
+
+Use the concept of the regional convo neural network  :
+Input the image (cell image)
+exact the regions (possible region that show the pattern and  are prone to cancer)
+Compute the CNN features 
+Classify regions 
+
+
+This is slow  but still the input size is very less than the previous one as the number  of the box / filter size in the above maybe be a lot .
+
+
+
+Faster RCNN : 
+In this the alog attempts to learn the region  , the region that is being passed and check if the region is cancerous cell or not .
+
+
+Region proposals -> the images' specific region is passed into the In this we get the feature of these specific part  . We try to get the region proposed and tyr to get the information about the candidates region based on the proposed regions. 
+
+
+Input the image directly in the RCNN and feature gets extracted . This is fast enough than the rcnn and the CNN  obviously  . 
+
+we can generate the feature map form the proposed regions each of the region ar then extracted using their own feature extractors .   These regions then have their own cnn head to 
+
+Semantic segmentation  :
+This is the classification of the very pixel of the image . 
+So in this input the coloured image the rgb  image and then classify each or the pixel of the image  to  get the 
+classification of the image . HERE in our case we can surely use the semantic segmentation  for the classification that is we have a rgb coloured image  , we can divide it into the pixel with different pixel weights and then pass it thought the nn to get an idea about the classification of the different pixel .
+
+what all can we do for this ? 
+We can use the encoder to encode the image of he cancer -> learn the feature of this cancer cell to check the mitosis in the reports , then use the up sampling operation to reconstruct the new image that will learn the feature form  our original image and then produce the probability of the type  fit eh cell in our new image .  
+
+
+SYANTX : tf.keras.layers.Convo2Dtranspose()
+
+
+what are the probabilism and the deterministic control outputs ?
+
+ Detecting mitosis in histopathology reports related to breast cancer using Deep Learning (DL) would typically involve probabilistic outputs.
+Uncertainty in Mitosis Detection: Identifying mitosis in histopathology images is a complex task that involves detecting specific patterns and structures indicative of cell division. While DL models can be trained to recognize these patterns, there is inherent uncertainty in the process due to variations in image quality, staining techniques, and biological variability. As a result, the model's output will likely include probabilities or confidence scores indicating the likelihood that a detected structure is a mitotic figure.
+
+Probability Scores: DL models for object detection or classification often output probability scores associated with each detected object or class. In the context of mitosis detection, the model may output a probability score for each candidate region indicating the likelihood of it being a mitotic figure. These probability scores provide valuable information about the model's confidence in its predictions and allow for decision-making based on the level of certainty.
+
+Thresholding for Decision-making: While DL models produce probabilistic outputs, decision-making can still be deterministic to some extent. By setting a threshold on the probability scores, you can make binary decisions (e.g., classify a region as mitotic or non-mitotic based on whether its probability score exceeds a certain threshold). However, the choice of threshold may vary depending on factors such as the desired balance between sensitivity and specificity or the acceptable level of false positives.
+
+In conclusion, detecting mitosis in histopathology reports using DL involves probabilistic outputs, as the model's predictions are inherently uncertain and are typically accompanied by probability scores indicating the confidence in those predictions.

@@ -1,0 +1,199 @@
+Introduction to Convolutional Neural Networks 
+Convolutional Neural Networks 
+Impact of the CNN :
+1.facial recognition  and detection
+2.Auto Driving and stuff
+3. Breast cancer 
+
+Images are the Numbers 
+Every pixel is a number and the overall, images becomes a  matrix of the numbers .  
+The problem is divided into the problem of  :
+1.Regression 
+2.Classifiaction 
+
+Regression: the  output values takes the continuous values 
+Classification : output variables is a label  class , basically it takes a class label and the can produce the probability of the particular class .
+
+Example related to the classification :
+there is a image -> pixel representation  of the images is given -> find if the image is of  which person? .
+The pixel in the matrix holds the values form [0,255] in the array matrix . 
+The option in the person is the classification class , either he can be a person from Option A, B , C,D . 
+
+High level Feature detection is the important key in the classification problem.  Finding out the important key features  Like  the eyes , nose  for the person , the edges and the lines in the case of the window or the object . 
+
+How to solve the classification problem ? 
+
+Domain knowledge -> define the features -> Detect the features to classify 
+View variation -> scale the variable -> inter class variations .
+
+The whole NN is based on the hierarchy of the features and the identification   of  those features. 
+
+
+****** approach******
+Image classification and the detection is based on  the CNN  :
+In a fully connected NN   we have to flatten the images   ,  there is a image conversion form the 3 d plot to the 2 d plot  .
+
+So the flattening of the 2 d image into the 1 d array is done using the compression  of the pixels mainly . The matrix of the  pixel values are  basically transformed into the array of  the 1 dimensional array  .
+
+What   is the input in this   case ?
+Input :
+2 d image
+Vector of the pixel values([compression of the 2 d matrix  / array into a single matrix and the array])
+
+Fully connected Neural network creation is the step 2 :
+Connect the neuron in  the hidden layer to all the neuron in the input layer
+
+No spatial information 
+And many parameters !!
+
+
+What is the spatial data in  the  above  ?
+Spatial information refers to data that describes the physical location and shape of objects in space. It encompasses geographic or geometric data, which includes the coordinates, dimensions, and relationships between different entities in a defined space .
+In this case it  is the compression of the   data from the 2d to the One d or the one d matrix. 
+******* Approach *******
+
+But the above is very  obsolete and Non work properly :
+In the above the images  information on the form of the pixel matrix is getting destroyed when there is a conversion form the 2 matrix to the One d matrix .  
+The pixel matrix  of the 2 dimensional is getting compressed into the One dimensional . Herer the pixel that are very  close are getting  destroyed In the  image . 
+
+What is the fully connected NN  ?(Recap)
+In this the neuron is connected  to the prior and the future layer fully   , Like a  many to many relation ship .
+
+What is the best way to get  the output ?
+The best way is to keep the structure of the spatial  inform as it is and changing the neural network such that the output is needful and the way we want  .
+
+what is the best way ?? 
+
+Now the best way is -> Instead of making the a fully connected NN we can use this approach , connect the neural network to some of the next layer's neurons and not all , There is no need to make a fully connected neural network , this reduced the computational overhead that is bacilli nm The neuron in the layer 1 is n and the prior is m . 
+
+ Step 1 : In the pixel images that is the array of the numeric values , connect  some of the patches  to  the neural network   . A small patch of the neural network is connected   to the neuron in  a hidden layer and that neurons is not fully connected in the future layer .
+
+step 2 : what is happening now ?  since the single neurons is given a small amount of the work to take care of , a small region in the pixel images is assigned to the neuron and its work is to find  the feature in that small region and  compute the output for the object 
+detection in that particular region  .
+
+The above mechanising of the algorithm is called as the "Convolutional" and since this is related to the neural network we call it as Convolutional neural network  .
+
+Terminology :
+1.conolutional : In the pixelated image a sub area of the pixel is assigned to the neuron in the Non dense or non fully connected Neural network , This is called as the convolutional  .The patchy operation is called as the convolutional . 
+
+2.FILTER SIZE  : this is the size of the sub  matrix  in the bigger matrix whose area is assigned to the single neuron .  
+
+The output of computation done by the neuron on  the filter size or the output of the convolutional is  use to define the input for the next hidden layer in the NN .
+
+Features Extraction and the Convolution operation 
+how does the Convolutional operation works ? 
+we have to compare the images  to find out the particular feature piece by piece . Taking the smaller subset of the piece and then making the comparison to find the feature is the important step  .
+So if the model is  basically able to  find the rough feature , then the 
+
+Filters  to find the X features :
+what are the filters sets  in the matrix  :
+These are the set with the weight assigned to the blocks then simi blocks , these have the weights assigned and these wrights are very much use to find  the feature  in the input . 
+
+
+Example to  this is : In the filter set of the pixelated images  , if we have a look at the features then we can find  features by assignment of the +1 to the white and -1 to the  black boxes or the sub boxes and finally finding the corresponding pattern . 
+
+
+what is happening in  the convolution operation  ?
+In the convolution take the small patch of the  pixel(this is basically the filter size) now in this  multiply this to the input of the image  then add the bias and apply non linearity to this .  then add the output of the matrix .
+in the example considered : 
+
+The sub patch or  the filter is of the size  : [[1,-1,-1] ,[-1,,1,-1] , [-1,-1,1]] 
+Now in this if we take the input n of the image -> and do the matrix multiplication then the output is -> all positive 1 3*3 matrix and the sum of that matrix is  9
+
+Element wise multiplication is the major part of the convo operations  :
+take first patch do the computation to  find the weights of of the first matrix . Now slide this a little to the left  and do the computation with the filter add this weight to the feature map .
+
+
+Feature map : this is the map with  the weight matrix , this is what we call the weight computation .The feature map  is filled accordingly  . The size of the feature map is same to the kernel  or the filter .
+
+
+Example to the convo filters that we can apply successfully :
+
+1.Original 
+2.Sharpen
+3.Edge detect 
+4.Strong edge detect . 
+
+This above are called as the convo neural networks as the convo is the backbone of these kind of the NN S .
+
+How to built these  kind of the NN's ? 
+CNN for the classification :
+what is  classification ? (recap)
+the output  of the NN takes the label class . out of the several options there is a single class label that it takes up to . 
+
+
+Convolutional : Apply filters to generate the feature Maps .
+Non linearity  : Often RelU is being used here . 
+Pooling :Down Sampling operation on each  feature Map . 
+
+what are  the corresponding computer syntax for these ?
+tf.keras.layers.Convo2D -> 2 d convolutional 
+tf.keras.activation.* -> this is for the 2d activation function to apply the Non linearity .
+
+tf.keras.layers.MaxPool2D -> this is for the pooling part . 
+
+
+How does the CNN works ?
+Input image 
+Convolutional(features map)
+Max-pooling 
+Fully connected Layers .
+
+what is the concept of the pooling in the CNN ?
+pooling : down sampling operation on the feature maps . 
+
+Types of Pooling
+Max Pooling: Takes the maximum value from a patch of the feature map. This is the most common type.
+Average Pooling: Takes the average value from a patch of the feature map.
+Global Pooling: Takes a single value (e.g., the maximum or average) across the entire feature map.
+
+
+Convo -> Non linearity -> pooling 
+
+For the neurons in the Hidden Layer :
+tf.keras.layers.Convo2D
+
+->take the input form the patch 
+->compute the weights 
+-> apply bias 
+
+Real computation  :
+1.apply a window of the weights 
+2.Compute the  linear combination 
+3.Activte the Non linear func  
+
+Local connectivity is the main idea here -> the neuron would only see the pathc that is assigned to it and nothing else .
+
+Mathematically :
+for the filter size matrix of  4 cross 4 
+
+the Y cap =  summation(i=1 to 4 (summation j =1 to 4 (wij *(xi+p , j +q  + b)) where p and q are the neuron in the hidden layers and the B is the bias to be added to make the shifting on the x axis and the wij is the weight thay are being computed . 
+
+what are the filters that can be used in the tf.keras.layers.convo2d() ??
+the filters include :
+1.Layers dim 
+2.Strides ->  filter  step size -> the dist to make the slide over in the matrix  .
+3.kernel size 
+4.receptive fields . 
+
+the above listed param are used to find the spatial arrangement for the output .
+
+Pixel by pixel operation  that replaces all the negative values by zeroes .
+This is called as the Non linear operations .Below zeroes are replaced by the 0  and the positive are taken as the they are .
+
+what are the benefits of the pooling :
+1.reduce  the dimensionality .
+2.spatial variance 
+
+what is the meaning of the max pooling -> 
+Take the filter patch , now in the filter patch consider the max number and  put it to the output max pool matrix  that is what we call the  max pool also in this  one more thing to point is that the  max pooling matrix is of the same size of the filter size .
+
+representation of the deep CNN  :
+Define layer to do the processing of the Output :
+1.Layer 1 : low features 
+2.layer 2 : Mid level features 
+3.Layer 3  : High level features 
+
+
+what is  the properties of the SoftMax that  makes it suitable ?
+The main properties is that it is used for the output of the last layer in  the NN , also this is used  to get the sum output of 1 overall ,  like if we sum the output of each of the neuron/perceptron in the output  layer the output  is 1 . It also squashes the output between the 0 and 1 in the output layer .

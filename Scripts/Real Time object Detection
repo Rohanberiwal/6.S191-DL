@@ -115,9 +115,6 @@ Step 4 : passing the ROI pooing thought the next layer (SVM) that is used for th
 
 step 5: apply the boundary box regressor that are the liner regression for the generating the accuracy in  the dimension of the anchor box . 
 
-
-
-
 Semantic segmentation  :
 This is the classification of the every pixel of the image . 
 So in this input the coloured image the rgb  image and then classify each or the pixel of the image  to  get the 
@@ -126,13 +123,29 @@ classification of the image . HERE in our case we can surely use the semantic se
 what all can we do for this ? 
 We can use the encoder to encode the image of he cancer -> learn the feature of this cancer cell to check the mitosis in the reports , then use the up sampling operation to reconstruct the new image that will learn the feature form  our original image and then produce the probability of the type  fit eh cell in our new image . 
 
-
-
 what is the use of the pooling ?
 Reduce the spatial dimension to increas4 the computational power of the neural network .
 This is done on the matrix . The matrix  may be divide into the sub matrix and then the max  or the  min pool  maybe applied  to reduce the spatial  dimensions . 
 
 the output matrix size of the pooling is same to the chucks they are divided . 
 
-
 what is the use of the You only Look once model (YOLO) ?
+This is the mechanism designed for  the instantaneous computing .  
+there are several YOLO model for the object detection in the image .
+
+what is the input ? 
+The input in the YOLO is the image 
+
+The output is in the form  :
+{B1.b2.b4...} Bounding boxes of n objects 
+{c1,c2,c3} are the class labels .
+
+Basically the output is the boundary boxes and the class labels as the output .
+The difference in the YOLO  and  the RCNN  is that the rcnn is the two stage networks while the yolo are the single state detectors . 
+
+
+what are the issue with the faster rcnn and the rcnn ? 
+The difference is in the  implementation  :
+1.Multi stage pipelines 
+2.Each of the components trained separately 
+3.Complex and  not used for the real time detection 

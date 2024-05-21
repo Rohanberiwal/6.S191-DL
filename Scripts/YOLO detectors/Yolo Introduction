@@ -1,0 +1,62 @@
+YOLO detection  Models  :
+these are the object detection model  , use to detect the  class label for the object in the single layer . 
+The input image is passed through the single CNN layer  and the class label for the object is produced .  
+
+All the loss of the information that is being calculated here are the regression losses . 
+step by step yolo implementation  :
+
+1.Take the input 
+2.Resize the image into the 448*448 dimension . 
+3.Divide the image  into the S*S grids .  
+4.Numebr of the pixel in  each of the grid is 448/S 
+5.Each grid is treated as Boundary box. 
+6. The cell where the object's centre falls is responsible for the object's class predication  .That particular grid cell is  main  for the class label predicating .
+
+Target values :  These are the values that we need to predict from  the network  is called as the target values  .The predication and the targets must be close enough , the  targets are the results basically that we have to  predict  .
+
+The ground truth value :  This is the dimension of the box where the object lies. This is the dimension  of the label that  has to be classed .  
+centre points  : This is the values that are relative  to  the anchor that (x,y) falls into .  
+
+Width / Height  : Relative to the whole image . 
+what is happening ? 
+We are trying to do the computation of the centre with respect tot eh anchor that falls into the(x,y) .
+
+while the width and the height of the image is computed based on the whole image .
+
+what is the main idea  ?
+let the ground truth be (X ,Y) and  the centre boundary box is (x1,y1). now  for the output : 
+
+delta x =  X-x / 448/S 
+delta Y = Y-y/448/S
+
+similar to  this we get the output for the  delta w and the delta h :
+
+delta W  = w/448 
+delta H  = h/448 
+
+The output are ->(DELTA X , DELTA Y , W ,H )
+These are the computed values .
+
+The grid cells with no object  have  the dimension as zero. 
+
+In the addition to these -> there is a c cap in the  above ,  the c cap value of  one shows that there is suppose to be a class label for that ground truth else no class label . 
+This c caps is the object ness score. That is basically the probe that the grid  has the object in it or not .
+
+
+what are the one  hot encoding vector ? 
+One-hot encoding is used to convert categorical variables into a format that can be provided to machine learning algorithms to improve their performance.
+
+One-hot encoding provides a way to transform categorical data into a numerical format that these algorithms can process  these are the examples :
+
+
+*** taken from chatgpt ***
+
+Suppose you have a categorical variable with three categories: "cat," "dog," and "fish."
+Original Data: ["cat", "dog", "fish", "cat"]
+One-Hot Encoded Data:
+"cat" -> [1, 0, 0]
+"dog" -> [0, 1, 0]
+"fish" -> [0, 0, 1]
+"cat" -> [1, 0, 0]
+
+The object ness score  is also called as the Prediction vector . 

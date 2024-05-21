@@ -263,3 +263,8 @@ Probability Scores: DL models for object detection or classification often outpu
 Thresholding for Decision-making: While DL models produce probabilistic outputs, decision-making can still be deterministic to some extent. By setting a threshold on the probability scores, you can make binary decisions (e.g., classify a region as mitotic or non-mitotic based on whether its probability score exceeds a certain threshold). However, the choice of threshold may vary depending on factors such as the desired balance between sensitivity and specificity or the acceptable level of false positives.
 
 In conclusion, detecting mitosis in histopathology reports using DL involves probabilistic outputs, as the model's predictions are inherently uncertain and are typically accompanied by probability scores indicating the confidence in those predictions.
+
+** Important**
+
+what is the use of padding ? 
+adding zero in the image matrix and increase the size in and order to get the output feature map of the same size and dimsion to image is called as padding . 

@@ -1,0 +1,36 @@
+Convo neural network for Segmentation 
+Image segmentation methods  :
+
+1.Graph cut 
+2.watershed 
+3.Noramlized cut 
+4.Mean shift 
+ 
+what is the idea behind the segmentation  ?
+To divide the image into serval section that are meaningful enough for the object predication and for the class labelling  .The image is divide into multiple smaller segments which are the subset of the  bigger image .
+
+Note :
+Image segmentation is vert much different from the grid creation in the YOLO model and the selective search algo in the  RCNN and the Region pooling network in the faster RCNN   .
+
+
+RCNN uses the a version  of the image seg called as the Min cut segmentation also known by the Constrained parametric min cuts to generate the region proposal for the image .
+
+SEMANTIC segmentation :
+Divide the image into the fix sized pixel size of we can say as a grid   . Then each grid is assigned a class label , classification done for each of the label  .
+The semantic seg is a pixel wise classification problem . 
+Semantic segmentation network are  : FCN ,  Mask RCNN and the deep labs . 
+
+
+FCN for the semantic seg(Fully convo neural network)
+Adapts various classification  network (VGG net , Goole Net ) into the fully convo networks by converting FC layer into 1*1 layer . 
+
+The main motivation here in the FCN  Is that we are replacing the Feedforward layer in the NN by the convo neural network for the pixel wise seg of the image . 
+So basically the DENSE FIELD  in the feed forward are changed to the receptive field FOR THE making of the convo  nn  .
+
+
+what are the issue in the above ?
+In the computation escalates  there is down sampling performed for the future layer neuron to do the computation . This is basically the issue that the fully convo NN has a lower resolution the  the input  .
+
+
+What is the solution for the FCN ? 
+Use the up sampling instead of the down sampling . 

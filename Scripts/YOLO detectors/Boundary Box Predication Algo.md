@@ -1,6 +1,6 @@
 ## Boundary Box Prediction in YOLO Object Detection
 
-While YOLO (You Only Look Once) doesn't rely on a single, specific algorithm within the convolutional (Conv) layer for boundary box prediction, it leverages a combination of techniques embedded within its architecture. Here's a breakdown of these key components:
+While YOLO (You Only Look Once) doesn't rely on a single, specific algorithm within the convolutional (Conv) layer for boundary box prediction, it leverages a combination of techniques embedded within its architecture.
 
 **1. Feature Extraction:**
 

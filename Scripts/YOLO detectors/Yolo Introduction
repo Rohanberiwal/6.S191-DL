@@ -59,4 +59,95 @@ One-Hot Encoded Data:
 "fish" -> [0, 0, 1]
 "cat" -> [1, 0, 0]
 
-The object ness score  is also called as the Prediction vector . 
+The objectness score (c cap)  is also called as the Prediction vector . 
+
+what is the difference in the image localization and the classification ? 
+The difference lies in the implementation :
+
+1.In the  case of the localization we draw a box around the object 
+2.In the classification we classify the  localized image . 
+3.Obbject detection is finding  the number of the object in the image .
+
+Overall what is happening  In the Yolo detection  model  ?
+
+we have a image  :
+We input the image  :
+we detect the object in the image and then make a boundary around the object . 
+we passed the image with the boundary box into the convo layer .
+
+what are the boundary Box coordinates that are being input into the convo layer ? 
+The boundary box coordinate are the centre of the object . For a image we try to find the center of the image and the grid that has the canter of the image , the coordinate is / are the boundary box coordinates.
+
+In addition to the boundary coordinates we  have the height and the with of the image that is basically the length and the breadth of the boundary box . 
+
+In all and all the 4 coordinates are : Boundary box  (x , y , w . h )-> input to the convo layer of the neural network 0-> output -> SoftMax(activation func)
+
+NOTE : the coordinate of the Image Is taken  in the range of (0,1) . Overall THE coordinates of the image could be (00) ,(01) (10) ,(11) .
+
+also the 
+(x,y,b,w <= 1 )
+
+Now the output are predicated probability of weather the object is there in the image or not .So for the n classification label we have the output  matrix as a column matrix of the N*1 size . 
+
+
+Y = [pc1]
+    [pc2] and so on where the pc is the object Ness score and lies between [0,1] , this is also called as the predicated vector that tell  if the object is in the image or not  .
+If the object of interest is present then the Pc vectored is 1 . Pc vector 0 means the  output is useless . 
+
+
+Loss function in the Yolo detectors :
+Y1 = target value 
+Y1(cap)= predicted by the model 
+
+if predicted vector in  the Y cap is 1 :
+loss output  = (y1-y1(cap))**2  + …(yn-yn(cap))**2 
+if the  predicted vector is 0  : then the output is  : (y1-y1(cap))**2 is the output of the function . This means  that we are not moving on forward for the object  find as the  predicted vector for the object is itself  0 .
+
+
+what is the main backbone of the YOLO algo  ?
+The main backbone of the algo is the divide of the image into the semi grides of the N*N size  and into m semi grides .
+
+Then the algo starts by making the boundary boxes around the images  and the objects in the images 
+
+the output matrix has the output  of the form ->
+[predict vector , 4 boundary value dimension  , Other class object present or no(these are the part of the classification of parameters) ]
+
+
+what is the overall output matrix or the output of the YOLO ? 
+The output matrix is -> semi grid size dimension * Y cap output size(dimension size)
+
+
+Point to remember  :
+the w and the h values of the images box can be >1 as there could be a possibility that the object  in the images are outside the boundary boxes. 
+But  the centre value and the delta value of the computation will always be <1 . 
+
+
+
+How / what is the algo behind the boundary box prediction  in the YOLO model ? 
+There is a predication method for the  boundary box around the object , that is the intersection over the union algorithm    .
+
+
+The IOU algo is the algo is the one that uses the some maths for the computation of the boundary  boxes :
+
+
+IOU =  (area of intersection) // (area of the union)
+
+what is the area of the intersection ?
+This is the the area that is comman in the two boundary boxes  the predicted one and the one that is already has the object (basically the target and the predicted) .
+
+what is the area of the union ? 
+This Is the sum of the two combined area  : Area of the surface 1 +  Areas of the surface2  .
+
+here the surface are the boundary box 
+
+
+More the IOU value the better is the position of the predicted Boundary boxes . 
+IOU >= 0.5 and if it is otherwise then then the predication is poor by the model . 
+
+Overall yolo  :
+YOLO is a clever convolutional neural network (CNN) for doing object detection in real-time. The algorithm applies a single neural network to the full image, and then divides the image into regions and predicts bounding boxes and probabilities for each region. These bounding boxes are weighted by the predicted probabilities
+
+Doubts in the YOLO -> 
+1.what is the grid size of each  in the image .
+2.read somewhere that the dimension of the image is fixed that is 448*448 and the grid size depends on the user . 
+3. the other way some person told that the grid size is is fixed for the image and is 19*19 per grid .and   the image is 57*57

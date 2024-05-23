@@ -34,3 +34,13 @@ In the computation escalates  there is down sampling performed for the future la
 
 What is the solution for the FCN ? 
 Use the up sampling instead of the down sampling . 
+
+DO the up sample with the atrous / dilated convolution . 
+what all are we supposed to do in the computation ? 
+
+Remove the fully connected layer in  the CNN  .
+
+Consider the FCN with  the VGG 16 Backbone  :
+remove the fully connected layer  and make them, convolutional layered . 
+ 
+Up sampling could lead  to the  output that could be much greater than the input size . 

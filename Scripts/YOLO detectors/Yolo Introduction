@@ -1,153 +1,43 @@
-YOLO detection  Models  :
-these are the object detection model  , use to detect the  class label for the object in the single layer . 
-The input image is passed through the single CNN layer  and the class label for the object is produced .  
+YOLO detection  Models  
+Anchor boxes in the YOLO version 2 
 
-All the loss of the information that is being calculated here are the regression losses . 
-step by step yolo implementation  :
+These are the boxes that are taken into the account when there are several overlapping boundary  boxes in the images  .If there are several object box and these are overlapping then the anchor boxes are taken into the account .
 
-1.Take the input 
-2.Resize the image into the 448*448 dimension . 
-3.Divide the image  into the S*S grids .  
-4.Numebr of the pixel in  each of the grid is 448/S 
-5.Each grid is treated as Boundary box. 
-6. The cell where the object's centre falls is responsible for the object's class predication  .That particular grid cell is  main  for the class label predicating .
+In the anchor box we basically use the pre defined box  . These pre defined box have fixed shape and the size .
+There are multiple anchor boxes allowed in the YOLO version 2 and above  .\
 
-Target values :  These are the values that we need to predict from  the network  is called as the target values  .The predication and the targets must be close enough , the  targets are the results basically that we have to  predict  .
+The anchor box can be narrow and wide .  The narrow have the width < Length while the wide are the one that are more escalated in the horizontal setting .
+Basically if there are object with overlapping boundary then directly we can use the anchor box . 
 
-The ground truth value :  This is the dimension of the box where the object lies. This is the dimension  of the label that  has to be classed .  
-centre points  : This is the values that are relative  to  the anchor that (x,y) falls into .  
+What is the criteria of the overlapping anchor  boxes  ?
+In the case of  several anchor box overlapping then we compute the IOU(intersection over union) for each of the anchor box and  the anchor box with he max IOU is taken for the further computation .
 
-Width / Height  : Relative to the whole image . 
-what is happening ? 
-We are trying to do the computation of the centre with respect tot eh anchor that falls into the(x,y) .
+anchor box also have their own limitation  :
+1.If there are total 3 object and  we are using all in all 2 anchor box then computation is very much poor and not up to the mark .
 
-while the width and the height of the image is computed based on the whole image .
+2.two object with thee same overlapping anchor box and the same centre point then that is also a huge overhead .
+ 
+It is worth noting that  the anchor box  computation is the part of the convo layer network , and these all are used in  the YOLO within the Convo layer which is the first step in the yolo computing  or the instantaneous object detection  computing . 
 
-what is the main idea  ?
-let the ground truth be (X ,Y) and  the centre boundary box is (x1,y1). now  for the output : 
+Also the YOLO are the single phase algo  , The image is passed into the convo layer in the starting and further no more convo layer are involved . 
+These are single Convo layered neural network  .
+Backbone  is the grid  and the centre computation unlike the RCNN and the Fast RCNN  that uses the selective search algo  .
 
-delta x =  X-x / 448/S 
-delta Y = Y-y/448/S
+All in all  in YOLO  , a single CNN simultaneously predicts multiple bounding boxes and class probabilities for those boxes.
+YOLO trains on full images and directly optimizes detection performance.
 
-similar to  this we get the output for the  delta w and the delta h :
+Limitation of the yolo 3 :
+If there are several object  then the work for the Grouping is  a struggle for  the YOLO .
 
-delta W  = w/448 
-delta H  = h/448 
+what is the YOLO version 3 : 
+The YOLO version 3 is a network with 75 convo layer that include the up sampling and there is a real time object detection .
 
-The output are ->(DELTA X , DELTA Y , W ,H )
-These are the computed values .
+The most important thing here is that different scale predication can be done with the help of the YOLO - 3 Model  .
 
-The grid cells with no object  have  the dimension as zero. 
+trade-off of the YOLO 3 :
+The object in the group is a big problem  , we cannot do the boundary box predication of the Objects in  the Group .
+Faster RCNN has the 2 network one is  :
+1.Proposal network
+2.Convo layer for the output generation 
 
-In the addition to these -> there is a c cap in the  above ,  the c cap value of  one shows that there is suppose to be a class label for that ground truth else no class label . 
-This c caps is the object ness score. That is basically the probe that the grid  has the object in it or not .
-
-
-what are the one  hot encoding vector ? 
-One-hot encoding is used to convert categorical variables into a format that can be provided to machine learning algorithms to improve their performance.
-
-One-hot encoding provides a way to transform categorical data into a numerical format that these algorithms can process  these are the examples :
-
-
-*** taken from chatgpt ***
-
-Suppose you have a categorical variable with three categories: "cat," "dog," and "fish."
-Original Data: ["cat", "dog", "fish", "cat"]
-One-Hot Encoded Data:
-"cat" -> [1, 0, 0]
-"dog" -> [0, 1, 0]
-"fish" -> [0, 0, 1]
-"cat" -> [1, 0, 0]
-
-The objectness score (c cap)  is also called as the Prediction vector . 
-
-what is the difference in the image localization and the classification ? 
-The difference lies in the implementation :
-
-1.In the  case of the localization we draw a box around the object 
-2.In the classification we classify the  localized image . 
-3.Obbject detection is finding  the number of the object in the image .
-
-Overall what is happening  In the Yolo detection  model  ?
-
-we have a image  :
-We input the image  :
-we detect the object in the image and then make a boundary around the object . 
-we passed the image with the boundary box into the convo layer .
-
-what are the boundary Box coordinates that are being input into the convo layer ? 
-The boundary box coordinate are the centre of the object . For a image we try to find the center of the image and the grid that has the canter of the image , the coordinate is / are the boundary box coordinates.
-
-In addition to the boundary coordinates we  have the height and the with of the image that is basically the length and the breadth of the boundary box . 
-
-In all and all the 4 coordinates are : Boundary box  (x , y , w . h )-> input to the convo layer of the neural network 0-> output -> SoftMax(activation func)
-
-NOTE : the coordinate of the Image Is taken  in the range of (0,1) . Overall THE coordinates of the image could be (00) ,(01) (10) ,(11) .
-
-also the 
-(x,y,b,w <= 1 )
-
-Now the output are predicated probability of weather the object is there in the image or not .So for the n classification label we have the output  matrix as a column matrix of the N*1 size . 
-
-
-Y = [pc1]
-    [pc2] and so on where the pc is the object Ness score and lies between [0,1] , this is also called as the predicated vector that tell  if the object is in the image or not  .
-If the object of interest is present then the Pc vectored is 1 . Pc vector 0 means the  output is useless . 
-
-
-Loss function in the Yolo detectors :
-Y1 = target value 
-Y1(cap)= predicted by the model 
-
-if predicted vector in  the Y cap is 1 :
-loss output  = (y1-y1(cap))**2  + …(yn-yn(cap))**2 
-if the  predicted vector is 0  : then the output is  : (y1-y1(cap))**2 is the output of the function . This means  that we are not moving on forward for the object  find as the  predicted vector for the object is itself  0 .
-
-
-what is the main backbone of the YOLO algo  ?
-The main backbone of the algo is the divide of the image into the semi grides of the N*N size  and into m semi grides .
-
-Then the algo starts by making the boundary boxes around the images  and the objects in the images 
-
-the output matrix has the output  of the form ->
-[predict vector , 4 boundary value dimension  , Other class object present or no(these are the part of the classification of parameters) ]
-
-
-what is the overall output matrix or the output of the YOLO ? 
-The output matrix is -> semi grid size dimension * Y cap output size(dimension size)
-
-
-Point to remember  :
-the w and the h values of the images box can be >1 as there could be a possibility that the object  in the images are outside the boundary boxes. 
-But  the centre value and the delta value of the computation will always be <1 . 
-
-
-
-How / what is the algo behind the boundary box prediction  in the YOLO model ? 
-There is a predication method for the  boundary box around the object , that is the intersection over the union algorithm    .
-
-
-The IOU algo is the algo is the one that uses the some maths for the computation of the boundary  boxes :
-
-
-IOU =  (area of intersection) // (area of the union)
-
-what is the area of the intersection ?
-This is the the area that is comman in the two boundary boxes  the predicted one and the one that is already has the object (basically the target and the predicted) .
-
-what is the area of the union ? 
-This Is the sum of the two combined area  : Area of the surface 1 +  Areas of the surface2  .
-
-here the surface are the boundary box 
-
-
-More the IOU value the better is the position of the predicted Boundary boxes . 
-IOU >= 0.5 and if it is otherwise then then the predication is poor by the model . 
-
-Overall yolo  :
-YOLO is a clever convolutional neural network (CNN) for doing object detection in real-time. The algorithm applies a single neural network to the full image, and then divides the image into regions and predicts bounding boxes and probabilities for each region. These bounding boxes are weighted by the predicted probabilities
-
-Doubts in the YOLO -> 
-1.what is the grid size of each  in the image .
-2.read somewhere that the dimension of the image is fixed that is 448*448 and the grid size depends on the user . 
-3. the other way some person told that the grid size is is fixed for the image and is 19*19 per grid .and   the image is 57*57
+The best thing is that the FASTER RCNN works fine in the case of the Region proposal network  that is the faster computation and is used in the region and  the boundary box detection  .

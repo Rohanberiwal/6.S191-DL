@@ -1,7 +1,6 @@
 # SegNets
 
-SegNets are fully convolutional encoder-decoder architectures designed for image segmentation. Here’s an overview of how they work and how they differ from Fully Convolutional Networks (FCNs).
-
+SegNets are fully convolutional encoder-decoder architectures designed for image segmentation.
 ## Architecture
 
 - **SegNets**: These are composed of an encoder and a decoder.

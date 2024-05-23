@@ -1,4 +1,4 @@
-v# Receptive Fields in Convolutional Neural Networks (CNNs)
+# Receptive Fields in Convolutional Neural Networks (CNNs)
 
 Receptive fields are a fundamental concept in convolutional neural networks (CNNs) that describe the region of the input space that a particular neuron is sensitive to. Understanding receptive fields is crucial for understanding how CNNs process information and extract features from input data. Let's delve deeper into this concept:
 

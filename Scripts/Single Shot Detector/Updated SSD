@@ -1,0 +1,26 @@
+Updates in the Single Shot detector for detection of  the small objects 
+
+The updates mentioned in the provided paragraph are aimed at enhancing the Single Shot Detector (SSD) algorithm for improved detection of small objects. 
+
+Incorporation of Depth-wise Separable Convolutions:
+
+Depth-wise separable convolutions are utilized in convolutional layers.
+These convolutions decompose the standard convolution operation into two separate operations: depth-wise convolution and point-wise convolution.
+By doing so, they reduce the number of parameters and computations, making the network more efficient.
+This modification helps in capturing finer details and improving the detection of small objects by enhancing the network's ability to learn from spatial information.
+Integration of Spatial Separable Convolutions:
+
+Spatial separable convolutions are also integrated into convolutional layers.
+These convolutions split the standard convolution operation into two separate operations: horizontal and vertical convolutions.
+By applying convolutions separately in spatial dimensions, the network can capture spatial relationships more effectively, which aids in detecting small objects.
+Resolution Multiplier for Dimension Reduction:
+
+A resolution multiplier is introduced to reduce the extraction of spatial dimensions from feature maps.
+This helps in preserving more detailed spatial information, which is crucial for detecting small objects.
+By reducing the spatial dimensions, the network can focus more on relevant features and improve its accuracy in detecting objects of varying sizes.
+Utilization of Tiny Convolutional Filters:
+
+The algorithm employs tiny convolutional filters optimized for detecting objects with the best aspect ratio values.
+These filters are designed to be small in size, allowing them to capture finer details and improve object localization.
+By applying filters with suitable aspect ratios, the network can better adapt to the characteristics of different objects, including small ones.
+Overall, these updates to the SSD algorithm enhance its capability to detect small objects by incorporating more efficient convolutional operations, preserving detailed spatial information, and utilizing specialized filters optimized for object detection.

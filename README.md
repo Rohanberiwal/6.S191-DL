@@ -1,7 +1,7 @@
 # Mitosis Detection in Histopathology Using Deep Learning Techniques
 
 ## Introduction
-This repository focuses on the development and application of deep learning techniques for detecting mitosis in histopathology images. Accurate detection of mitosis is crucial for cancer diagnosis and prognosis. We employ several state-of-the-art deep learning models, including YOLO, SSD, Multibox, RCNN, Faster RCNN, and Fast RCNN, to improve the accuracy and efficiency of mitosis detection. This project is supervised by Angel Jothi.
+This repository focuses on the development and application of deep learning techniques for detecting mitosis in histopathology images. Accurate detection of mitosis is crucial for cancer diagnosis and prognosis. We employ several state-of-the-art deep learning models, including YOLO, SSD, Multibox, RCNN, Faster RCNN, and Fast RCNN, to improve the accuracy and efficiency of mitosis detection. This project is supervised by Dr.Angel Arul Jothi.
 
 ## Table of Contents
 - [Installation](#installation)

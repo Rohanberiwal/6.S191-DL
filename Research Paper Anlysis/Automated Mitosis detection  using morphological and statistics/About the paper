@@ -1,4 +1,4 @@
-Automated Mitosis detection using Morphological and Multi channel Statistics . 
+]Automated Mitosis detection using Morphological and Multi channel Statistics . 
 
 The heading suggests that the study or system focuses on detecting dividing cells (mitosis) in medical images automatically. 
 The two method that  are being suggested here are :
@@ -59,6 +59,8 @@ Convert  the RGB  image into some other colour space OUT of any one of the given
 
 The goal is to find which out  of the following is the better colour space for finding the resign of the mitosis from the background and the nucleus. 
 
+
+
 Idea behind the experiment :
 1.In the H and E strains image  ,below are the colour combinations:
 a. Cytoplasm and nucleus -> Blue and purple 
@@ -67,5 +69,3 @@ b. extracellular material  have hue of pink  .
 In order to reduce the Laplacian and Gaussian Response the RGB ->  blue ratio image to accurate the nuclear dye .
 
 In the BR scale we do the computation of the finding of the Laplacian of Gaussian response that segregates the background and the nuclear element of the cell .
-
-

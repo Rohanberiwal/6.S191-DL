@@ -22,6 +22,6 @@ This repository focuses on the development and application of deep learning tech
 ## Installation
 To get started, clone the repository and install the required dependencies:
 ```bash
-git clone https://github.com/RohanBeriwal/mitosis-detection.git
+git clone https://github.com/RohanBeriwal/6.S191.git
 cd mitosis-detection
 pip install -r requirements.txt

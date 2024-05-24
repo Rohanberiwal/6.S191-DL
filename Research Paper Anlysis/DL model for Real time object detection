@@ -1,0 +1,151 @@
+Real Time Object Detection Using Deep learning
+Issue with the earlier method  of the object  detection :
+1.Imprecise architecture 
+2.Trainable algo 
+3.SLow and subpar performance In the object detection in  the previous method 
+
+
+what is the best options for the object detection ? ?
+The single shot detector that uses  only a single layer of the perceptron / or the convolutional network . the primary goal of this research paper was to make the enhancement in the accuracy in the SSDs .
+
+what are the goal of this Research  paper  ?
+The primary goal of this research paper was to make  :
+1.Enahcne the accuracy of the SSD  
+2.What is the SSD :
+ this is  the single convolutional layered neural network used  in the object detection 
+3.The image localization issue :  detection  of the class label for the image  in  a  image that has several object  .
+
+How is "an image will be used as the system's input, and the output will be a bounding box that corresponds to every object in the image and specifies the type of object in each box" related  to our project ? 
+
+we can input the cell image as the input and then  find out the region :
+
+Step 1 >For each mitotic cell (a cell undergoing mitosis) in the dataset image  we need to identify its location and draw a bounding box around it.
+
+Step2 >This bounding box will help in localizing the mitotic cells within the larger image.
+
+The output will not only include the bounding boxes but also the classification of each detected object  . Either it could be a mitotic cell or a non mitotic cell  .
+
+
+How would  the single pass in the NN  helpful by drawing the Boundary boxes ?
+
+1.Precise Localization
+2.precisely locate each mitotic cell within the histopathology image.
+3.Idea on the spatial distribution of mitosis in the tissue.
+4.Bounding box data can be used for statistical analysis to study patterns and correlations in mitotic activity across different samples and conditions.
+
+
+
+*****RCNN *****
+In this we divide the image  into several regions using  the algo like the selective search on the image . region of  interest using the proposal method(selective search)  .
+
+
+The images that we get are then resized or wrapped into  maybe smaller or bigger size . Basically there is a change in the dimensions of the image . 
+
+
+Steps ar :
+1.selecitve search to find the regions 
+2.Wrap image 
+3. Pass the wrapped image thought the Convo layer to get the convo feature maps 
+4.Pass the region and the feature map thought the SVM to find the class labels  
+5.Bounday box regression for the accurate dimension 
+
+No of the box == no of the convo layer and the number of the SVM , boundary box units 
+Overheads 
+***************
+
+
+
+****Fast Regional CNN MODEL ****
+what are the Regional CNN ?  
+
+The regional CNN is the method for the   class label detection FOR A object in the image .  In this the  image is divided into several regions . 
+Main idea behind the RCNN is :
+
+
+1.Region proposal : 
+Selective search algo used to generate the boxes around the image  .This algo find the box and then do the computation for the same  .
+
+2.Feature extraction from the image that is passed after the selective search  . The image boxes are resized to a fix size  and then passed thorough the Convo layer . 
+Feature map creation  form the convo layer(deep convo layers)
+
+
+
+3.Class labelling : This classification step for each of the box  is  done using the SVM(support vector machines) . Different boxes are being assigned the class label .  
+
+4.Bounding Box Regressor : Linear regression  model for generation  of the Accuracy in dimension of the box in the given space .
+
+
+
+Overhead in the use of the RCNN 
+1.Separate Training Stages :
+
+a.)make the boundary boxes box 
+b.) feature extract 
+c.)SVM computation 
+d.) Boundary box regressor 
+
+2.Computationally Expensive
+3.Multi phase computation  for the output  generation  .
+
+
+*** FASTER RCNN***
+
+It uses a pre trained CNN to extract the feature maps :
+
+Step 1: image passed thought a pre trained CNN ( VGG16, Reset) This is the backbone step of the faster RCNN .Multiple feature are produced  .
+
+Step 2 regional proposal Network(RPN)
+This is the neural network that proposed the region  , this does not uses the selective search to find the feature in the regions . 
+
+1.)The Region Proposal Network (RPN) is responsible for generating region proposals, which are candidate bounding boxes that may contain objects.
+
+2.)The RPN operates on the feature maps produced by the backbone network and predicts potential object locations . The boxes are called as the anchor boxes  .
+
+
+3.)It outputs a set of anchor boxes with associated objectless scores (probability of containing an object) and bounding box regressions (adjustments to the anchor box coordinates).
+
+Step3 : Region of Interest (ROI) Pooling
+
+>This layer or the step is used to find the feature from the anchor box , and assign them a class  label , these feature are assigned and extract  form  the class .
+
+>ROI pooling/align resizes each region proposal to a fixed size, ensuring that they can be fed into subsequent layers with consistent dimensions. 
+
+
+Step 4 : passing the ROI pooing thought the next layer (SVM) that is used for the  labelling the class .
+
+step 5: apply the boundary box regressor that are the liner regression for the generating the accuracy in  the dimension of the anchor box . 
+
+Semantic segmentation  :
+This is the classification of the every pixel of the image . 
+So in this input the coloured image the rgb  image and then classify each or the pixel of the image  to  get the 
+classification of the image . HERE in our case we can surely use the semantic segmentation  for the classification that is we have a rgb coloured image  , we can divide it into the pixel with different pixel weights and then pass it thought the nn to get an idea about the classification of the different pixel and about if the cell or the region in the histopathology   is actually undergoing the mitosis or not .
+
+what all can we do for this ? 
+We can use the encoder to encode the image of he cancer -> learn the feature of this cancer cell to check the mitosis in the reports , then use the up sampling operation to reconstruct the new image that will learn the feature form  our original image and then produce the probability of the type  fit eh cell in our new image . 
+
+what is the use of the pooling ?
+Reduce the spatial dimension to increas4 the computational power of the neural network .
+This is done on the matrix . The matrix  may be divide into the sub matrix and then the max  or the  min pool  maybe applied  to reduce the spatial  dimensions . 
+
+the output matrix size of the pooling is same to the chucks they are divided . 
+
+what is the use of the You only Look once model (YOLO) ?
+This is the mechanism designed for  the instantaneous computing .  
+there are several YOLO model for the object detection in the image .
+
+what is the input ? 
+The input in the YOLO is the image 
+
+The output is in the form  :
+{B1.b2.b4...} Bounding boxes of n objects 
+{c1,c2,c3} are the class labels .
+
+Basically the output is the boundary boxes and the class labels as the output .
+The difference in the YOLO  and  the RCNN  is that the rcnn is the two stage networks while the yolo are the single state detectors . 
+
+
+what are the issue with the faster rcnn and the rcnn ? 
+The difference is in the  implementation  :
+1.Multi stage pipelines 
+2.Each of the components trained separately 
+3.Complex and  not used for the real time detection 

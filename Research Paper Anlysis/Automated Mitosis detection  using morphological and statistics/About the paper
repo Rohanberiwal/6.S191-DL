@@ -1,0 +1,71 @@
+Automated Mitosis detection using Morphological and Multi channel Statistics . 
+
+The heading suggests that the study or system focuses on detecting dividing cells (mitosis) in medical images automatically. 
+The two method that  are being suggested here are :
+
+1.Analysing the shape and structure of the cells (morphological techniques).
+2.Using statistical data from multiple imaging channels to enhance the detection process.
+
+
+Framework proposed in the the paper :
+
+The framework involves analysing statistical and morphological features in specific color channels of the images. It includes two main phases: candidate detection and candidate classification. The candidate detection phase uses various image processing techniques to identify potential mitotic cells, while the candidate classification phase extracts features from these candidates and employs a decision tree classifier to distinguish between mitotic and non-mitotic cells.
+
+
+Explanation on the decision Tree classification on if the cell is mitotic or non mitotic
+
+A decision tree classifier helps distinguish between mitotic and non-mitotic cells by making decisions based on the features extracted from the cells. Here's how it works:
+
+Feature Selection:
+Before using a decision tree classifier, relevant features are extracted from each candidate cell. These features may include morphological characteristics (e.g., size, shape), first-order statistics (e.g., mean intensity, variance), and second-order statistics (e.g., texture descriptors).
+
+Decision Making:
+The decision tree classifier uses these features to make a series of decisions. Each decision is based on the value of a specific feature. For example, it might start by asking whether the cell's size is above a certain threshold, or whether its mean intensity falls within a certain range.
+
+Tree Structure:
+The decision tree is structured like a flowchart, with nodes representing decisions and branches representing possible outcomes based on those decisions. At each node, the classifier selects the feature that provides the best split between mitotic and non-mitotic cells.
+
+
+Training:
+The decision tree classifier is trained using a dataset where the mitotic and non-mitotic cells are already labelled. During training, the classifier learns the relationship between the features and the corresponding labels.
+
+
+Important  point in the paper  :
+The mitosis count is important factor telling about the aggressiveness of the tumour .
+The mitosis count manually is done by examine of the H and e strains udder the microscope . 
+
+The area under the microscope with the scope of 40 X is called as HPE (high power field) .
+Under the high power field there is a 20- % variation in  the outcome and the total counted mitosis count . 
+
+
+The things that effect the mitosis count manually is are  :
+1.Irregular shaped object under the microscope .
+2.seevral unwanted object due to slide prep .
+
+
+Several phase in the mitosis :
+1.pro phase 
+2.meta phase 
+3.Anaphase 
+4.Telophase 
+
+
+Approach of the experiment : 
+Convert  the RGB  image into some other colour space OUT of any one of the given below  :
+
+1.HSV(hue saturation value)
+2.Lab 
+3.Luv 
+
+The goal is to find which out  of the following is the better colour space for finding the resign of the mitosis from the background and the nucleus. 
+
+Idea behind the experiment :
+1.In the H and E strains image  ,below are the colour combinations:
+a. Cytoplasm and nucleus -> Blue and purple 
+b. extracellular material  have hue of pink  .
+
+In order to reduce the Laplacian and Gaussian Response the RGB ->  blue ratio image to accurate the nuclear dye .
+
+In the BR scale we do the computation of the finding of the Laplacian of Gaussian response that segregates the background and the nuclear element of the cell .
+
+

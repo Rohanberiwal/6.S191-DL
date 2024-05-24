@@ -1,0 +1,64 @@
+Updates in the Single Shot detector for detection of  the small objects 
+
+The updates mentioned in the provided paragraph are aimed at enhancing the Single Shot Detector (SSD) algorithm for improved detection of small objects. 
+
+Incorporation of Depth-wise Separable Convolutions:
+
+Depth-wise separable convolutions are utilized in convolutional layers.
+These convolutions decompose the standard convolution operation into two separate operations: depth-wise convolution and point-wise convolution.
+By doing so, they reduce the number of parameters and computations, making the network more efficient.
+This modification helps in capturing finer details and improving the detection of small objects by enhancing the network's ability to learn from spatial information.
+Integration of Spatial Separable Convolutions:
+
+Spatial separable convolutions are also integrated into convolutional layers.
+These convolutions split the standard convolution operation into two separate operations: horizontal and vertical convolutions.
+By applying convolutions separately in spatial dimensions, the network can capture spatial relationships more effectively, which aids in detecting small objects.
+Resolution Multiplier for Dimension Reduction:
+
+A resolution multiplier is introduced to reduce the extraction of spatial dimensions from feature maps.
+This helps in preserving more detailed spatial information, which is crucial for detecting small objects.
+By reducing the spatial dimensions, the network can focus more on relevant features and improve its accuracy in detecting objects of varying sizes.
+Utilization of Tiny Convolutional Filters:
+
+The algorithm employs tiny convolutional filters optimized for detecting objects with the best aspect ratio values.
+These filters are designed to be small in size, allowing them to capture finer details and improve object localization.
+By applying filters with suitable aspect ratios, the network can better adapt to the characteristics of different objects, including small ones.
+Overall, these updates to the SSD algorithm enhance its capability to detect small objects by incorporating more efficient convolutional operations, preserving detailed spatial information, and utilizing specialized filters optimized for object detection.
+
+
+In  the SSD  including the default box and the multi scale func (anchor box) the efficient and the accuracy of the same is equal to the Faster RCNN . However overall the Faster RCNN Is  overall better than the SSD . 
+
+
+
+Some of the quality of the SSD  :
+Making of the feature map , making the scale up and the High accuracy help in the generation of outcomes that are almost same to the outputs of the Faster RCNN .
+
+
+The mechanism of the SSD :
+Makes  the boundary box in the Single convo layer  and then do the computation of finding the object in the single box , do the class labelling for the same . The classification of the object to make the Class label predication of each of the boundary box . 
+
+
+Single shot detector with the multi box :
+Just lime in the YOLO we use the anchor box to find the overlapping object in the image we can use this same approach in the case of the SSD + multi box  .In the multi box if there are multiple box that are being overlapped then we use the anchor  . 
+
+Single shot multi box detector ->>  faster and accurate. 
+
+
+In the case of the low res photos -> SSD+  multi box is the best object for the object detection  . 
+
+For the various scale detection -> different size  + aspect ratio we can use the SSD + multi box detector . the accuracy is all time best . 
+
+
+UAT is the most important stuff in the deliver of the output .  
+Black box testing is the most important stuff that is being used  .
+
+
+Point for good testing and proper item delivery   :
+
+1.Integrity check  
+2.UAT 
+3.End to end testing
+
+the accuracy in the SSD + multi model - > 80% around. 
+Motivation :
+To get the best boundary box with different aspect ratio  and the selection of the best boundary boxes for  the same .

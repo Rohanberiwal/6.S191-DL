@@ -7,7 +7,8 @@ In the Consistency Subset Evaluation approach, the objective is to select a subs
 ## Optimization Technique
 
 1. **Initialization**:
-   - Start with an initial subset of features, which can be randomly selected or chosen using some heuristic.
+   - Start with an initial subset of features, which can be randomly selected or chosen using some heuristic , like Cluster-based Selection , Greedy algo  , Dynamic programming etc  .
+     
 
 2. **Evaluation**:
    - Evaluate the current subset of features based on the level of consistency in the class values.

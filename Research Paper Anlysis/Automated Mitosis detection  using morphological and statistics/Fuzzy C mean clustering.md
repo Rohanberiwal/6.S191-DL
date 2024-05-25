@@ -1,4 +1,4 @@
-# Fuzzy C-Mean Clustering for Mitosis Detection in Meningioma Immunohistochemistry Images
+# Fuzzy C-Mean Clustering for Mitosis Detection in Immunohistochemistry Images
 
 ## Overview:
 The fuzzy c-mean clustering algorithm with ultra-erosion operation in the CIE Lab color space is employed for detecting proliferative nuclei and estimating the mitosis index .

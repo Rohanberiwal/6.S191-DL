@@ -1,6 +1,6 @@
 # RoI Align in Mask R-CNN
 
-The term "RoI Align" in Mask R-CNN refers to Region of Interest (RoI) Align, which is a technique used to extract features from the feature maps for each region of interest (RoI) with greater accuracy and precision, especially when dealing with pixel-level tasks like instance segmentation. Here's the meaning of RoI Align:
+The term "RoI Align" in Mask R-CNN refers to Region of Interest (RoI) Align, which is a technique used to extract features from the feature maps for each region of interest (RoI) with greater accuracy and precision, especially when dealing with pixel-level tasks like instance segmentation. 
 
 1. **Region of Interest (RoI)**: In the context of Mask R-CNN, a region of interest (RoI) represents a bounding box that tightly encloses a detected object instance in an image.
 

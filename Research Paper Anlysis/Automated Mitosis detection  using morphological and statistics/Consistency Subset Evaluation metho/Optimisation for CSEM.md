@@ -27,8 +27,7 @@ In the Consistency Subset Evaluation approach, the objective is to select a subs
 6. **Exploration**:
    - From the backtracked subset, explore alternative subsets by making different modifications.
   
-## Time complexity 
-Varies from poly(n**2) to Exp (2**n)  .
+
 
 7. **Termination**:
    - Continue the process iteratively until a termination condition is met, such as reaching a maximum number of iterations or achieving a satisfactory level of consistency.
@@ -39,3 +38,6 @@ Varies from poly(n**2) to Exp (2**n)  .
 ## Conclusion
 
 By integrating Hill Climbing augmented with Backtracking into the Consistency Subset Evaluation approach, it becomes possible to efficiently search for feature subsets that maximize consistency in class values while overcoming local optima and exploring alternative subsets. This combined approach helps in selecting feature subsets that are effective for classification, clustering, or other data analysis tasks.
+
+## Time complexity 
+Varies from poly(n**2) to Exp (2**n)  .

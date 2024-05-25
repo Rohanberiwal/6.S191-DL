@@ -18,7 +18,8 @@ In the Consistency Subset Evaluation approach, the objective is to select a subs
    - Generate neighboring subsets by adding, removing, or modifying features in the current subset.
 
 4. **Improvement**:
-   - Select the neighboring subset that leads to the highest improvement in consistency.
+   - Select the neighboring subset that leads to the highest improvement in consistency. The computaiton for the imoorvement in the consistency is done by the haralick and the run lenght matrix  .
+   - 
 
 5. **Backtracking**:
    - If no neighboring subset leads to improvement, backtrack to the previous subset and explore alternative paths.

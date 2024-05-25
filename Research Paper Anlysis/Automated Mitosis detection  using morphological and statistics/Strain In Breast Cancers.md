@@ -1,6 +1,6 @@
 # Stains Used in Breast Cancer Reports
 
-In breast cancer pathology reports, various stains are used to highlight different tissue structures or components. Here are the commonly used stains and their roles:
+In breast cancer pathology reports, various stains are used to highlight different tissue structures or components. 
 
 ## Hematoxylin:
 Hematoxylin typically stains cell nuclei blue-purple. It highlights structures like nuclei and nucleoli.

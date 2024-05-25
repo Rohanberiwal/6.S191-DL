@@ -23,6 +23,7 @@ The formula for the LoG filter is:
 - The term inside the parenthesis, \( \left(1 - \frac{x^2 + y^2}{2\sigma^2}\right) \), represents the Laplacian component.
 - The exponential term, \( e^{-\frac{x^2 + y^2}{2\sigma^2}} \), represents the Gaussian smoothing component.
 
+
 ### Summary
 
 - The **LoG filter** is used to detect edges in an image by highlighting areas with rapid intensity changes.

@@ -1,8 +1,7 @@
 
 ## First-Order Statistical Features
 
-In the BR image, we extract five first-order statistical features including mean, median, variance, kurtosis, and skewness of each segmented candidate. Here's a description of each feature:
-
+In the BR image, we extract five first-order statistical features including mean, median, variance, kurtosis, and skewness of each segmented candidate. 
 1. **Mean**:
    - The mean represents the average intensity value of the pixels within the segmented candidate region. It is calculated by summing up all pixel values within the region and dividing by the total number of pixels.
 

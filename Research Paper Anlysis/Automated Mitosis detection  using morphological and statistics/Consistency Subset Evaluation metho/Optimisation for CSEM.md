@@ -12,6 +12,7 @@ In the Consistency Subset Evaluation approach, the objective is to select a subs
 
 2. **Evaluation**:
    - Evaluate the current subset of features based on the level of consistency in the class values.
+   - Leval of consistency in the class values : It is a measure of how well a particular subset of features discriminates between different classes or categories in the dataset. 
 
 3. **Neighborhood Search**:
    - Generate neighboring subsets by adding, removing, or modifying features in the current subset.

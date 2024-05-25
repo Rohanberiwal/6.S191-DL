@@ -16,12 +16,14 @@ The Laplacian of Gaussian (LoG) filter is an edge-detection technique that combi
 ## Laplacian of Gaussian (LoG) Filter
 
 The formula for the LoG filter is:
+
 \[ \text{LoG}(x, y) = -\frac{1}{\pi \sigma^4} \left(1 - \frac{x^2 + y^2}{2\sigma^2}\right) e^{-\frac{x^2 + y^2}{2\sigma^2}} \]
 
 - \( x \) and \( y \) are the coordinates of a pixel in the image.
 - \( \sigma \) is the standard deviation of the Gaussian distribution, determining the level of smoothing.
 - The term inside the parenthesis, \( \left(1 - \frac{x^2 + y^2}{2\sigma^2}\right) \), represents the Laplacian component.
 - The exponential term, \( e^{-\frac{x^2 + y^2}{2\sigma^2}} \), represents the Gaussian smoothing component.
+
 
 ### Summary
 

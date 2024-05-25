@@ -1,4 +1,4 @@
-]Automated Mitosis detection using Morphological and Multi channel Statistics . 
+Automated Mitosis detection using Morphological and Multi channel Statistics . 
 
 The heading suggests that the study or system focuses on detecting dividing cells (mitosis) in medical images automatically. 
 The two method that  are being suggested here are :
@@ -9,7 +9,7 @@ The two method that  are being suggested here are :
 
 Framework proposed in the the paper :
 
-The framework involves analysing statistical and morphological features in specific color channels of the images. It includes two main phases: candidate detection and candidate classification. The candidate detection phase uses various image processing techniques to identify potential mitotic cells, while the candidate classification phase extracts features from these candidates and employs a decision tree classifier to distinguish between mitotic and non-mitotic cells.
+The framework involves analysing statistical and morphological features in specific colour channels of the images. It includes two main phases: candidate detection and candidate classification. The candidate detection phase uses various image processing techniques to identify potential mitotic cells, while the candidate classification phase extracts features from these candidates and employs a decision tree classifier to distinguish between mitotic and non-mitotic cells.
 
 
 Explanation on the decision Tree classification on if the cell is mitotic or non mitotic
@@ -69,3 +69,88 @@ b. extracellular material  have hue of pink  .
 In order to reduce the Laplacian and Gaussian Response the RGB ->  blue ratio image to accurate the nuclear dye .
 
 In the BR scale we do the computation of the finding of the Laplacian of Gaussian response that segregates the background and the nuclear element of the cell .
+
+
+How to find the boundary of  the strain in the H AND E images  ?
+
+The  defined step in the Process and the experiment are  :
+
+
+1. **Colour Transformation to Blue Ratio (BR) Image**:
+   - Convert the RGB image to a BR image using the formula:
+     \[
+     BR = 100 \times \left(\frac{B}{R + G + B + \frac{1}{256}}\right)
+     \]
+     where \( B \), \( R \), and \( G \) are the blue, red, and green channels of the RGB image, respectively.
+
+2. **Compute Laplacian of Gaussian (LoG) Responses**:
+   - Apply the LoG filter to the BR image to highlight regions with high spatial variance (edges), which correspond to the nuclei.
+
+3. **Binary Thresholding**:
+   - Convert the LoG-filtered image into a binary image by applying a threshold, resulting in a binary image where potential nuclei regions are white (foreground) and the background is black.
+
+4. **Morphological Processing**:
+   - **Eliminate Too Small Regions**: Remove small, irrelevant regions from the binary image to reduce noise.
+   - **Fill Holes**: Ensure that detected nuclei regions are solid by filling in any holes within them.
+   - **Refine Boundaries Using Active Contour Model**: Use active contour models (snakes) to refine the boundaries of the detected nuclei regions, making them more accurate.
+
+5. **Candidate Selection**:
+   - Filter the detected nuclei candidates based on their size to ensure that only regions with appropriate size characteristics are considered as potential nuclei for mitosis detection.
+
+what is the LOG filter ? 
+This is  the Laplacian of the Gaussian filter used for the edge detection . This perform two function in the combination that is the Gaussian smoothening and the Laplacian of that smoothening function to the intensity change  in the filter . 
+
+
+what are the  Morphological features that are being printed from the candidate area ? 
+The five morphological features  are  
+
+1.Area 
+2.rodunenss 
+3.Perimeter 
+4.Equivalent spherical perimeter 
+5.Elognation 
+
+The morphological information  Is used in  the phenotypic information of the Mitosis in the nuclei  .
+
+Statical data from the BR image (rgb -> BR image colour space)
+
+BR image, we extract five first order statistical 
+features including mean, median, variance, kurtosis and 
+skewness of each segmented candidate.
+
+Consistency subset method for the testing of the extract feature  :
+consistency subset evaluation 
+method is used  to select a subset of features that maximize 
+the consistency in the class values. We evaluate the worth 
+of subsets of features by the level of consistency in the 
+class values using the projection of a subset of features 
+from training dataset. The consistency of these subsets 
+is not less than that of the full set of features. 
+
+
+Overall what is it all about ? 
+
+
+Take the image :
+Image conversion from the RGB -> BR IMAGE
+H and E strain are blue purple -> except the cytoplasm + other organelles that are pink .
+We get the region of the nuclei and we Apply LOG filter to have a better view  of the nuclei  . Log is used fore the sensitive image edge detection  .
+
+
+
+exact the feature :
+->compute the first order statistics  (morphological )and second order feature (statistics based one) 
+-> Hara lick , run-Len matrix for the texture analysis of the image . 
+->
+
+
+Consistory subset eval method 
+optimisation of the CSEM-> hill climbing + backtrack . 
+Pass this to the DT classifier to  find the mitotic  , non mitotic cell . 
+SMOTE if the class has very less region relation to the mitosis  .
+
+Goal -> f measure is high  , FP is low AD TP ALWAYS high . 
+
+propose the future -> colour deconvolve  pre processing + Hough transform for the image texture analysis . 
+
+

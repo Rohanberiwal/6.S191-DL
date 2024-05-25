@@ -26,6 +26,9 @@ In the Consistency Subset Evaluation approach, the objective is to select a subs
 
 6. **Exploration**:
    - From the backtracked subset, explore alternative subsets by making different modifications.
+  
+## Time complexity 
+Varies from poly(n**2) to Exp (2**n)  .
 
 7. **Termination**:
    - Continue the process iteratively until a termination condition is met, such as reaching a maximum number of iterations or achieving a satisfactory level of consistency.

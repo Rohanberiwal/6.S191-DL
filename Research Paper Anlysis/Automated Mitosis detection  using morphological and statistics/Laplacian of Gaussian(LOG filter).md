@@ -1,24 +1,30 @@
 ## Laplacian of Gaussian (LoG) Filter
 
-The Laplacian of Gaussian (LoG) filter is an edge-detection filter used to identify regions in an image where there are rapid intensity changes, typically corresponding to edges. It is particularly useful for highlighting regions with high spatial variance, such as the boundaries of nuclei in H&E stained images.
+The Laplacian of Gaussian (LoG) filter is an edge-detection technique that combines Gaussian smoothing with the Laplacian operator to highlight regions with rapid intensity changes (edges) in an image. It is particularly useful for detecting edges and fine details, such as the boundaries of nuclei in histological images.
 
 ### How the LoG Filter Works
 
 1. **Gaussian Smoothing**:
-   - First, the image is smoothed using a Gaussian filter. This step reduces noise and minor variations in the image, making the subsequent edge detection more robust.
+   - Smooth the image using a Gaussian filter to reduce noise and minor variations. The amount of smoothing is controlled by the standard deviation \( \sigma \).
 
-2. **Laplacian Filtering**:
-   - After smoothing, the Laplacian filter is applied. The Laplacian operator calculates the second derivative of the image intensity, which highlights regions where the intensity changes rapidly, corresponding to edges.
+2. **Laplacian Operator**:
+   - Apply the Laplacian operator to the smoothed image. This operator calculates the second derivative of the image intensity, emphasizing regions where the intensity changes rapidly.
 
-3. **Combining Steps**:
-   - The LoG filter combines these two steps into one operation. It convolves the image with a kernel that approximates the Laplacian of the Gaussian function. The resulting image emphasizes edges while reducing noise.
+3. **Combined Operation**:
+   - The LoG filter performs these steps in a single convolution operation with a kernel that approximates the Laplacian of the Gaussian function.
 
 ### Mathematical Representation
 
-The mathematical representation of the LoG filter is:
+The formula for the LoG filter is:
 \[ \text{LoG}(x, y) = -\frac{1}{\pi \sigma^4} \left(1 - \frac{x^2 + y^2}{2\sigma^2}\right) e^{-\frac{x^2 + y^2}{2\sigma^2}} \]
-where \( \sigma \) is the standard deviation of the Gaussian distribution, which controls the amount of smoothing.
+
+- \( x \) and \( y \) are the coordinates of a pixel in the image.
+- \( \sigma \) is the standard deviation of the Gaussian distribution, determining the level of smoothing.
+- The term inside the parenthesis, \( \left(1 - \frac{x^2 + y^2}{2\sigma^2}\right) \), represents the Laplacian component.
+- The exponential term, \( e^{-\frac{x^2 + y^2}{2\sigma^2}} \), represents the Gaussian smoothing component.
 
 ### Summary
 
-In this context, the LoG filter is used to detect the boundaries of nuclei in the BR image by highlighting regions with significant intensity changes, making it easier to identify and segment nuclei for further processing.
+- The **LoG filter** is used to detect edges in an image by highlighting areas with rapid intensity changes.
+- It **smooths the image** first to reduce noise and then applies the **Laplacian operator** to find edges.
+- The **mathematical formula** combines both operations into one, emphasizing the edges while smoothing the image.

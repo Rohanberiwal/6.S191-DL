@@ -7,7 +7,7 @@ Binary Cross-Entropy Loss is a commonly used loss function in binary classificat
 - **Definition:** Binary Cross-Entropy Loss measures the dissimilarity between the true binary labels and the predicted probabilities output by the model.
   
 - **Formula:** The formula for Binary Cross-Entropy Loss is:
- $$ [ L(y, \hat{y}) = - (y \log(\hat{y}) + (1 - y) \log(1 - \hat{y})) ] where (y) is the true binary label (0 or 1), and (\hat{y}) is the predicted probability of class 1. $$
+L(y, hat(y)) = - (y log(hat(y)) + (1 - y) log(1 - hat(y)))] where (y) is the true binary label (0 or 1), and (\hat{y}) is the predicted probability of class 1. $$
 
   
 - **Interpretation:** The loss penalizes the model more when it makes incorrect predictions with high confidence. It encourages the model to assign high probabilities to the correct class and low probabilities to the incorrect class.

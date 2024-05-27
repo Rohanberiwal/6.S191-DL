@@ -10,10 +10,11 @@ ReLU, or Rectified Linear Unit, is an activation function commonly used in artif
 
 Leaky ReLU is a variation of the ReLU activation function. While ReLU sets all negative values to zero, Leaky ReLU allows a small, positive gradient for negative input values, instead of zero. The mathematical expression for Leaky ReLU is:
 
-\[ f(x) = \begin{cases} 
-  x & \text{if } x \geq 0 \\
-  \alpha x & \text{if } x < 0 
-\end{cases} \]
+$$ f(x) = \begin{cases}
+    x & \text{if } x \geq 0 \\
+    \alpha x & \text{if } x < 0
+\end{cases} $$
+
 
 
 Here, \( \alpha \) is a small constant, typically a small fraction like 0.01.

@@ -4,7 +4,7 @@
 
 ReLU, or Rectified Linear Unit, is an activation function commonly used in artificial neural networks. It introduces non-linearity to the network by outputting the input directly if it is positive, and outputting zero otherwise. The mathematical expression for ReLU is:
 
-\[ f(x) = \max(0, x) \]
+f(x) = max(0, x)
 
 ## What is Leaky ReLU?
 

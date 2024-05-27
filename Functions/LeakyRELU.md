@@ -15,6 +15,7 @@ Leaky ReLU is a variation of the ReLU activation function. While ReLU sets all n
   \alpha x & \text{if } x < 0 
 \end{cases} \]
 
+
 Here, \( \alpha \) is a small constant, typically a small fraction like 0.01.
 
 ## Advantages of Leaky ReLU:

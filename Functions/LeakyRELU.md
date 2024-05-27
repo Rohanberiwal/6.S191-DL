@@ -17,7 +17,7 @@ $$ f(x) = \begin{cases}
 
 
 
-Here, \( \alpha \) is a small constant, typically a small fraction like 0.01.
+Here, $$\( \alpha \) is a small constant, typically a small fraction like 0.01.
 
 ## Advantages of Leaky ReLU:
 

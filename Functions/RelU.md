@@ -6,9 +6,7 @@ The Rectified Linear Unit (ReLU) is a popular activation function used in neural
 
 The ReLU function is defined as follows:
 
-```latex
-\text{ReLU}(x) = \max(0, x)
-
+RelU = max(0,x)
 
 ## Properties
 

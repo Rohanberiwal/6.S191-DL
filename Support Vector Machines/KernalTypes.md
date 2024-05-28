@@ -22,7 +22,7 @@ The linear kernel is the simplest kernel function. It does not perform any trans
 
 If \(\mathbf{x}_i = [x_{i1}, x_{i2}]\) and \(\mathbf{x}_j = [x_{j1}, x_{j2}]\), then:
 
-\[ K(\mathbf{x}_i, \mathbf{x}_j) = x_{i1} x_{j1} + x_{i2} x_{j2} \]
+$$\[ K(\mathbf{x}_i, \mathbf{x}_j) = x_{i1} x_{j1} + x_{i2} x_{j2} \]
 
 ## 2. Polynomial Kernel
 

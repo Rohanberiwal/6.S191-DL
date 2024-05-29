@@ -1,20 +1,30 @@
-Object detection 
-
-Single shot detector 
-Yolo model  version 1- 8 .
-double short detector fast RCNN(regional convolutional neural network)
-faster rcnn .
-mask rcnn . 
-
-vision transformer based model 
-DETR(DETECTION TRANSFORMER)
-
- 
-mitosis detection 
 
 
-DATASET REALTED TO mitosis in histopathology . 
-CNN 
-ROI MODELS 
+Leaky relU -> done 
+categorical cross entropy -> done 
+image seg model  
 
 
+
+How does the annotation for these Model look like
+rcnn 
+fast rcnn
+faster rcnn 
+Mask RCNN 
+
+Annotation requirement of this model.
+
+
+Mitosis detection data sets   -> done 
+ICPR 2012 -> http://ludo17.free.fr/mitos_2012/index.html
+
+ICPR 2014 -> done 
+GZMH -> recent  done  
+
+
+
+
+
+
+DeepMitosis: Mitosis detection via deep detection, verification and segmentation networks Search for the paper .
+Try to implement them on the dataset 

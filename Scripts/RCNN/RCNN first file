@@ -1,0 +1,64 @@
+Fast RCNN 
+Key Point :
+1.Object detection model .
+2.Uses object proposal using the DEEP convolutional Neural Networks 
+3.Fast RCNN is very better than  the RCNN as It employs the improved training and the testing speed with  the faster efficiency . 
+
+
+Comparison of the Fast RCNN ON Different pre trained layers  :
+1.VGG 16 -> 9 times faster than RCNN 
+2.Deep convNets improves the accuracy  of the object detection and the image segmentation  .
+3.RCNN is a multi stage pipeline and all the multi stage pipelines are slow . 
+
+
+Overhead in the multi stage  pipeline frameworks  :
+1.Object localization is a big issue that lead to decrease  in the performance  .
+Object localization is the scattering of several object in a image  that has to be segmented. 
+
+
+Two issue that localized object creates are  :
+1. Since there are a lot of object in the image ,  several object have to pass through the multi stage pipeline , making  a computational overhead for the system  .
+
+2.The object coordinate or the position  is a very rough estimate  and serval computation to get the precise location has to be done . 
+
+Meaning of "Object proposal" -> Boundary box or a box that is built around the object in the image is the object proposal . The object proposal could have  the object with or may not have the object with the particular feature during the Binary classification or the multi classifies .
+The output that the proposed area or the object proposal has the Object with the particular feature  that we are searching for is outputted by the predicted prob / predicted vector (c) . 
+
+
+RCNN  :overview 
+1.Rcnn uses a deep convo neural network to classify the object proposals  .But the notable drawbacks are :
+1.Trainign is multi staged
+2.Expensive overheads 
+3.Object detection is slow .
+
+there are several computer vision Task  :
+1.Classification 
+2.Image seg :
+1.semantic seg 
+2.instance seg > mask rcnn 
+3.Object diction 0-> mutli -level classification
+
+RCNN specific -> object detection  
+What is the input  ?
+The input is the RGB image .
+The output are the set of detected object in the image .
+
+The object detection outputs two main things for the image :
+1.Category labels -> In  our case (mitosis cell or non  mitosis cell)
+2.BoundAY box labels->> the four number x  ,y , weight and the height -> coordinate of the cell undergoing  mitosis or not . 
+
+
+significance of the x , y  , width and the height of the box -
+The x ,y is the centre of the boundary box .
+The weight and the height of the boundary box is the weight and the height . 
+We need four real number to define the boundary box around the object . 
+
+
+Overhead in the object detection :
+1.Multiple computation overheads
+2.Multi type output computation . 
+3.Large images 
+
+SO the set output is the Coordinates .
+
+After the Image classification  we have  the Object detection as the number 2 core issue in the computation overhead . 

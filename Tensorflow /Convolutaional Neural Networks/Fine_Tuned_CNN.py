@@ -45,6 +45,53 @@ from torchvision.transforms import functional as F
 from PIL import Image
 import torchvision.transforms as T
 import numpy as np
+import os
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+import numpy as np
+from tensorflow.keras.layers import GlobalAveragePooling2D, Dense
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import os
+import json
+import os
+import json
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
+import torch
+import torchvision
+from torch.utils.data import Dataset
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+standard_dict_mitotic = {}
+standard_dict_non_mitotic = {}
+import os
+import json
+import torch
+import torchvision
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import matplotlib.pyplot as plt
+import os
+import json
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -72,6 +119,21 @@ import torchvision.ops as ops
 import torch
 import torch.nn.functional as F
 import torchvision.ops as ops
+
+import torch
+import torch.nn.functional as F
+import torchvision.ops as ops
+
+import torch
+import torch.nn.functional as F
+import torchvision.ops as ops
+def get_transform(train):
+    transforms = []
+    transforms.append(T.ToTensor())
+    if train:
+        transforms.append(T.RandomHorizontalFlip(0.5))
+    return T.Compose(transforms)
+
 def extract_features(image_path):
 
     image = cv2.imread(image_path)
@@ -80,14 +142,6 @@ def extract_features(image_path):
     image = np.expand_dims(image, axis=0)
     features = base_model.predict(image)
     return features
-
-
-def get_transform(train):
-    transforms = []
-    transforms.append(T.ToTensor())
-    if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transforms)
 
 def extract_bounding_box(filename, path_to_file, mitotic_annotation_file, non_mitotic_annotation_file):
     if mitotic_annotation_file in path_to_file:
@@ -266,6 +320,9 @@ modify_dict_inplace(standard_dict_non_mitotic, root)
 modify_dict_inplace(standard_dict_mitotic, root)
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
+
+
+# Define root directory and annotation files
 root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
@@ -296,39 +353,78 @@ train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
     fill_mode='nearest'
 )
 
-# Load ResNet50 base model
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
+X_train, X_val = np.zeros((100, 224, 224, 3)), np.zeros((20, 224, 224, 3))  # Placeholder data, replace with actual loading
+y_train, y_val = np.zeros((100,)), np.zeros((20,))  # Placeholder labels, replace with actual loading
+
+
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
-# Add custom top layers for binary classification
+batch_size = 4
+steps_per_epoch = len(X_train) // batch_size
+epochs = 10
+
+test_img_path = r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"
+
+
+# Adjusting Dense layer units and activation
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
-x = Dense(1024, activation='relu')(x)
+x = Dense(512, activation='relu')(x)  # Experiment with different units
 predictions = Dense(1, activation='sigmoid')(x)
-
-# Create final model
 model = Model(inputs=base_model.input, outputs=predictions)
 
-# Compile model
-model.compile(optimizer=Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
-# Train model
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
+# Adjusting learning rate and optimizer
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)  # Experiment with different learning rates
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+
+filepath = 'best_model.keras'  # Ensure the filepath ends with .keras
+
+# Define callbacks including ModelCheckpoint with the correct filepath
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=3),
+    tf.keras.callbacks.ModelCheckpoint(filepath, monitor='val_accuracy', save_best_only=True, verbose=1)
+]
+# Training the model with callbacks
 model.fit(
-    train_datagen.flow(X_train, y_train, batch_size=4),  # Decreased batch size due to small dataset
-    steps_per_epoch=len(X_train) // 4,  # Adjust steps per epoch accordingly
-    epochs=10,
-    validation_data=(X_val, y_val)
+    train_datagen.flow(X_train, y_train, batch_size=batch_size),
+    steps_per_epoch=steps_per_epoch,
+    epochs=epochs,
+    validation_data=(X_val, y_val),
+    callbacks=callbacks
 )
 
-# Evaluate model
+# Evaluating model performance
 loss, accuracy = model.evaluate(X_val, y_val)
 print(f"Validation accuracy: {accuracy * 100:.2f}%")
-print("Testing phase ")
-test_img_path = r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"
-test_img = Image.open(test_img_path).resize((224, 224)).convert('RGB')
-test_img_array = np.expand_dims(np.array(test_img), axis=0) / 255.0
+
+history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=10, batch_size=32)
+
+# Accessing training history
+print(history.history.keys())
+plt.plot(history.history['accuracy'], label='training accuracy')
+plt.plot(history.history['val_accuracy'], label='validation accuracy')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+
 
 print("****** CNN Layer ********\n")
 features = extract_features(test_img_path)
 print(features)
-print("Shape of feature map:", features.shape)
+
 print("\n****** CNN Layer ********\n")

@@ -45,6 +45,42 @@ from torchvision.transforms import functional as F
 from PIL import Image
 import torchvision.transforms as T
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.ops as ops
+import cv2
+import numpy as np
+import json
+from torchvision.models import resnet50
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input
+import matplotlib.pyplot as plt
+from PIL import Image
+import torchvision.transforms as transforms
+import torch
+from torch.autograd import Function
+import pdb
+import numpy as np
+import torch
+import torch.nn.functional as F
+
+import torch
+import torch.nn.functional as F
+import torchvision.ops as ops
+
+import torch
+import torch.nn.functional as F
+import torchvision.ops as ops
+def extract_features(image_path):
+
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, (224, 224))
+    image = preprocess_input(image)
+    image = np.expand_dims(image, axis=0)
+    features = base_model.predict(image)
+    return features
+
 
 def get_transform(train):
     transforms = []
@@ -230,9 +266,6 @@ modify_dict_inplace(standard_dict_non_mitotic, root)
 modify_dict_inplace(standard_dict_mitotic, root)
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
-
-
-# Define root directory and annotation files
 root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
@@ -294,11 +327,8 @@ test_img_path = r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"
 test_img = Image.open(test_img_path).resize((224, 224)).convert('RGB')
 test_img_array = np.expand_dims(np.array(test_img), axis=0) / 255.0
 
-# Perform inference
-output_features = model.predict(test_img_array)
-
-# Print the shape of output features
-print(f"Shape of Output Feature Maps: {output_features.shape}")
-
-# Optionally, print the output features themselves
-print(output_features)
+print("****** CNN Layer ********\n")
+features = extract_features(test_img_path)
+print(features)
+print("Shape of feature map:", features.shape)
+print("\n****** CNN Layer ********\n")

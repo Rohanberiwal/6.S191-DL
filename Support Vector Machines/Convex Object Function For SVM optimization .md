@@ -7,6 +7,14 @@ Support Vector Machines (SVMs) use a convex optimization approach to find the op
 - **Margin Maximization**: Larger margins generalize better on unseen data, enhancing SVM performance.
 
 - **Mathematical Formulation**: For linearly separable cases, the objective function is:
+\[ \min_{\mathbf{w}, b} \frac{1}{2} \|\mathbf{w}\|^2 + C \sum_{i=1}^{n} \max(0, 1 - y_i (\mathbf{w} \cdot \mathbf{x}_i + b)) \]
+
+In this formulation:
+- \( \mathbf{w} \) represents the weight vector.
+- \( b \) is the bias term.
+- \( C \) is the regularization parameter.
+- \( \|\mathbf{w}\|^2 \) denotes the squared L2-norm of \( \mathbf{w} \).
+- \( y_i \) are the class labels.
 
   where \( \mathbf{w} \) is the weight vector, \( b \) is the bias term, \( C \) is the regularization parameter, \( \|\mathbf{w}\|^2 \) is the L2-norm of \( \mathbf{w} \), and \( y_i \) are class labels.
 

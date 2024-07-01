@@ -190,10 +190,41 @@ def extract_filenames_from_json(json_file, root):
         
     return filename_list
 
+def save_patches(image_dict, save_dir, prefix):
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    
+    patch_count = 0
+    
+    for image_path, boxes in image_dict.items():
+        try:
+            # Load the image
+            image = Image.open(image_path)
+            
+            for xmin, ymin, width, height in boxes:
+                # Extract patch based on bounding box coordinates
+                patch = image.crop((xmin, ymin, xmin + width, ymin + height))
+                
+                # Resize patch to match model input size (e.g., 224x224)
+                patch = patch.resize((224, 224))
+                
+                # Save the patch
+                patch_save_path = os.path.join(save_dir, f"{prefix}_patch_{patch_count}.jpg")
+                patch.save(patch_save_path)
+                
+                patch_count += 1
+        
+        except Exception as e:
+            print(f"Error processing image {image_path}: {e}")
+
 # Define root directory and annotation files
 root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
+
+# Define directories for saving patches
+mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\MitoticFolder"
+non_mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\NonMitoticFolder"
 
 mitotic_filenames = extract_filenames_from_json(mitotic_annotation_file, root)
 mitotic_output = print_mitotic(mitotic_annotation_file)
@@ -205,13 +236,15 @@ modify_dict_inplace(standard_dict_mitotic, root)
 load_annotations_into_dict(mitotic_annotation_file, root, standard_dict_mitotic)
 load_annotations_into_dict(non_mitotic_annotation_file, root, standard_dict_non_mitotic)
 
-# Plot patches extracted from bounding boxes for mitotic images
 for key in standard_dict_mitotic.keys():
     plot_patches(key, standard_dict_mitotic[key])
 
-# Plot patches extracted from bounding boxes for non-mitotic images
 for key in standard_dict_non_mitotic.keys():
     plot_patches(key, standard_dict_non_mitotic[key])
 
-# Alternatively, you can plot them together with different colors
 plot_boxes_together(standard_dict_mitotic, standard_dict_non_mitotic)
+path_one  = r"C:\Users\rohan\OneDrive\Desktop\Mitotis_Patch"
+save_patches(standard_dict_mitotic, path_one , "mitotic")
+path_two = r"C:\Users\rohan\OneDrive\Desktop\Non_mitotis_patch"
+save_patches(standard_dict_non_mitotic, path_two, "non_mitotic")
+print("Done")

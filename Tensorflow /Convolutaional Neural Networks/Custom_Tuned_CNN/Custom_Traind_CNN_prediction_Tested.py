@@ -209,8 +209,8 @@ def get_file_paths(directory):
 
 
 # Save patches for mitotic and non-mitotic images
-save_patches(standard_dict_mitotic, mitotic_save_dir, "mitotic")
-save_patches(standard_dict_non_mitotic, non_mitotic_save_dir, "non_mitotic")
+#ave_patches(standard_dict_mitotic, mitotic_save_dir, "mitotic")
+#save_patches(standard_dict_non_mitotic, non_mitotic_save_dir, "non_mitotic")
 print("Patches saved successfully.")
 
 # Get file paths of saved patches
@@ -296,20 +296,21 @@ def generate_data_batches(image_paths, label, batch_size=32):
 # Define batch size and number of epochs
 batch_size = 32
 epochs = 500
-num_classes  = 2 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(input_shape[0], input_shape[1], 3)),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation='relu'),
-    tf.keras.layers.Dense(num_classes, activation='softmax')
+
+# Build the CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+    MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(1, activation='sigmoid')
 ])
+
 # Compile the model
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -375,6 +376,8 @@ def plot_feature_maps(model, image_path):
     except Exception as e:
         print(f"Error plotting feature maps for image {image_path}: {e}")
 
+
+# Example: Plot feature maps for the first non-mitotic patch
 if len(non_mitotic_train_paths) > 0:
     example_image_path = non_mitotic_train_paths[0]
     plot_feature_maps(model, example_image_path)

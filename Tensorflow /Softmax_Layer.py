@@ -5,7 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 
 # Define paths and directories
@@ -204,205 +204,114 @@ list_non_mitotic = get_file_paths(non_mitotic_save_dir)
 print("List of mitotic patches:", list_mitotic)
 print("List of non-mitotic patches:", list_non_mitotic)
 
-# Split paths into training and validation sets
-train_ratio = 0.7
-validation_ratio = 0.3
+# Label lists for mitotic and non-mitotic patches
+labels_mitotic = [1] * len(list_mitotic)
+labels_non_mitotic = [0] * len(list_non_mitotic)
 
-num_mitotic = len(list_mitotic)
-num_non_mitotic = len(list_non_mitotic)
+# Combine lists and labels
+X = np.array(list_mitotic + list_non_mitotic)
+y = np.array(labels_mitotic + labels_non_mitotic)
 
-num_mitotic_train = int(train_ratio * num_mitotic)
-num_mitotic_val = num_mitotic - num_mitotic_train
+# Shuffle combined data
+indices = np.arange(len(X))
+np.random.shuffle(indices)
+X = X[indices]
+y = y[indices]
 
-num_non_mitotic_train = int(train_ratio * num_non_mitotic)
-num_non_mitotic_val = num_non_mitotic - num_non_mitotic_train
+# One-hot encode labels
+num_classes = 2  # Number of classes
+y = tf.keras.utils.to_categorical(y, num_classes)
 
-# Assign training and validation sets for mitotic and non-mitotic patches
-mitotic_train_paths = list_mitotic[:num_mitotic_train]
-mitotic_val_paths = list_mitotic[num_mitotic_train:]
+# Split data into training and validation sets
+split_idx = int(0.8 * len(X))
+X_train, X_val = X[:split_idx], X[split_idx:]
+y_train, y_val = y[:split_idx], y[split_idx:]
 
-non_mitotic_train_paths = list_non_mitotic[:num_non_mitotic_train]
-non_mitotic_val_paths = list_non_mitotic[num_non_mitotic_train:]
-
-print("Number of mitotic patches (train):", num_mitotic_train)
-print("Number of mitotic patches (val):", num_mitotic_val)
-print("Number of non-mitotic patches (train):", num_non_mitotic_train)
-print("Number of non-mitotic patches (val):", num_non_mitotic_val)
-
-# Function to load image and label
-def load_image_and_label(image_path, label, target_size=(224, 224)):
-    try:
-        # Load image from path and resize
-        image = load_img(image_path, target_size=target_size)
-
-        # Convert image to array and normalize pixel values
-        image_array = img_to_array(image)
-        image_array = image_array / 255.0
-
-        return image_array, label
-
-    except Exception as e:
-        print(f"Error loading image {image_path}: {e}")
-        return None, None
-
-import numpy as np
-import tensorflow as tf
-from PIL import Image
-
-# Define manual augmentation function
-def manual_augmentation(image_array):
-    # Perform manual augmentation (e.g., flipping horizontally)
-    flipped_image = tf.image.flip_left_right(image_array)
-    return flipped_image
-
-def generate_data_batches(image_paths, label, batch_size=32):
+# Data generator function
+def data_generator(file_paths, labels, batch_size=32, augment=False):
     while True:
-        for i in range(0, len(image_paths), batch_size):
-            batch_paths = image_paths[i:i + batch_size]
-            batch_images = []
-            batch_labels = []
-
-            for image_path in batch_paths:
-                image_array, _ = load_image_and_label(image_path, label)
-                if image_array is not None:
-                    # Apply manual augmentation
-                    augmented_image = manual_augmentation(image_array)
-                    batch_images.append(augmented_image)
-                    batch_labels.append(label)
-
-            batch_images = np.array(batch_images)
-            batch_labels = np.array(batch_labels)
-
-            yield batch_images, batch_labels
-
-# Define batch size and number of epochs
-batch_size = 32
-epochs = 500
-
-# Update labels to categorical format
-mitotic_train_labels = [1] * len(mitotic_train_paths)
-mitotic_val_labels = [1] * len(mitotic_val_paths)
-non_mitotic_train_labels = [0] * len(non_mitotic_train_paths)
-non_mitotic_val_labels = [0] * len(non_mitotic_val_paths)
-
-# Combine mitotic and non-mitotic paths and labels
-train_paths = mitotic_train_paths + non_mitotic_train_paths
-train_labels = mitotic_train_labels + non_mitotic_train_labels
-val_paths = mitotic_val_paths + non_mitotic_val_paths
-val_labels = mitotic_val_labels + non_mitotic_val_labels
-
-# Shuffle the training and validation sets
-train_data = list(zip(train_paths, train_labels))
-val_data = list(zip(val_paths, val_labels))
-np.random.shuffle(train_data)
-np.random.shuffle(val_data)
-train_paths, train_labels = zip(*train_data)
-val_paths, val_labels = zip(*val_data)
-
-# Update data generator to handle both classes
-def generate_data_batches(image_paths, labels, batch_size=32):
-    while True:
-        for i in range(0, len(image_paths), batch_size):
-            batch_paths = image_paths[i:i + batch_size]
+        for i in range(0, len(file_paths), batch_size):
+            batch_paths = file_paths[i:i + batch_size]
             batch_labels = labels[i:i + batch_size]
-            batch_images = []
+            images = []
 
-            for image_path in batch_paths:
-                image_array, _ = load_image_and_label(image_path, None)
-                if image_array is not None:
-                    # Apply manual augmentation
-                    augmented_image = manual_augmentation(image_array)
-                    batch_images.append(augmented_image)
+            for path in batch_paths:
+                img = load_img(path, target_size=(224, 224))
+                img = img_to_array(img)
+                img /= 255.0
+                images.append(img)
 
-            batch_images = np.array(batch_images)
+            images = np.array(images)
             batch_labels = np.array(batch_labels)
 
-            # Convert labels to categorical
-            batch_labels = tf.keras.utils.to_categorical(batch_labels, num_classes=2)
+            if augment:
+                datagen = ImageDataGenerator(
+                    rotation_range=20,
+                    width_shift_range=0.2,
+                    height_shift_range=0.2,
+                    shear_range=0.2,
+                    zoom_range=0.2,
+                    horizontal_flip=True,
+                    fill_mode='nearest'
+                )
+                images, batch_labels = next(datagen.flow(images, batch_labels, batch_size=batch_size))
 
-            yield batch_images, batch_labels
+            yield images, batch_labels
 
-# Build the CNN model with softmax activation
-model = Sequential([
-    Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
-    MaxPooling2D((2, 2)),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D((2, 2)),
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D((2, 2)),
-    Flatten(),
-    Dense(128, activation='relu'),
-    Dropout(0.5),
-    Dense(2, activation='softmax')
-])
+# Define model
+def create_model(input_shape=(224, 224, 3), num_classes=2):
+    model = Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+        MaxPooling2D((2, 2)),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Flatten(),
+        Dense(256, activation='relu'),
+        Dropout(0.5),
+        Dense(num_classes, activation='softmax')  # Output layer with softmax for multi-class classification
+    ])
+    return model
 
-# Compile the model with categorical_crossentropy
+model = create_model(num_classes=num_classes)
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Count the number of training and validation steps per epoch
-train_steps_per_epoch = len(train_paths) // batch_size
-val_steps_per_epoch = len(val_paths) // batch_size
+# Train model
+batch_size = 32
+train_gen = data_generator(X_train, y_train, batch_size=batch_size, augment=True)
+val_gen = data_generator(X_val, y_val, batch_size=batch_size)
 
-# Create data generators for training and validation
-train_generator = generate_data_batches(train_paths, train_labels, batch_size=batch_size)
-val_generator = generate_data_batches(val_paths, val_labels, batch_size=batch_size)
-
-# Train the model
 history = model.fit(
-    train_generator,
-    steps_per_epoch=train_steps_per_epoch,
-    epochs=epochs,
-    validation_data=val_generator,
-    validation_steps=val_steps_per_epoch
+    train_gen,
+    steps_per_epoch=len(X_train) // batch_size,
+    validation_data=val_gen,
+    validation_steps=len(X_val) // batch_size,
+    epochs=100
 )
 
-# Evaluate the model
-loss, accuracy = model.evaluate(val_generator, steps=val_steps_per_epoch)
-print(f"Validation accuracy: {accuracy * 100:.2f}%")
+def plot_training_history(history):
+    plt.figure(figsize=(12, 8))
 
-# Function to plot feature maps for an image patch
-def plot_feature_maps(model, image_path):
-    try:
-        image = load_img(image_path, target_size=(224, 224))
-        image_array = img_to_array(image)
-        image_array = np.expand_dims(image_array, axis=0) / 255.0
+    # Plot training and validation accuracy
+    plt.subplot(2, 1, 1)
+    plt.plot(history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.legend()
 
-        # Get feature maps for each layer in the model
-        layer_outputs = [layer.output for layer in model.layers]
-        activation_model = Model(inputs=model.input, outputs=layer_outputs)
-        activations = activation_model.predict(image_array)
+    # Plot training and validation loss
+    plt.subplot(2, 1, 2)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Val Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
 
-        # Plot feature maps
-        layer_names = [layer.name for layer in model.layers]
-        for layer_name, layer_activation in zip(layer_names, activations):
-            if 'conv2d' in layer_name.lower():
-                print(f"Feature maps for layer: {layer_name}")
-                num_filters = layer_activation.shape[-1]
-                display_grid = np.zeros((8, 8 * num_filters))
+    plt.tight_layout()
+    plt.show()
 
-                for filter_index in range(num_filters):
-                    channel_image = layer_activation[0, :, :, filter_index]
-                    channel_image -= channel_image.mean()
-                    channel_image /= channel_image.std()
-                    channel_image *= 64
-                    channel_image += 128
-                    channel_image = np.clip(channel_image, 0, 255).astype('uint8')
-                    display_grid[:, filter_index * 8: (filter_index + 1) * 8] = channel_image
-
-                scale = 1.0 / 4.0
-                plt.figure(figsize=(scale * display_grid.shape[1], scale * display_grid.shape[0]))
-                plt.title(layer_name)
-                plt.grid(False)
-                plt.imshow(display_grid, aspect='auto', cmap='viridis')
-
-                plt.show()
-
-    except Exception as e:
-        print(f"Error plotting feature maps for image {image_path}: {e}")
-
-# Example: Plot feature maps for the first non-mitotic patch
-if len(non_mitotic_train_paths) > 0:
-    example_image_path = non_mitotic_train_paths[0]
-    plot_feature_maps(model, example_image_path)
-else:
-    print("No non-mitotic patches available for feature map visualization.")
+plot_training_history(history)

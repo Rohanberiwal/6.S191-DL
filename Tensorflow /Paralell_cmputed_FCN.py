@@ -1,3 +1,9 @@
+
+
+
+
+
+## FCN pipeline code 
 import os
 import json
 import numpy as np
@@ -725,14 +731,15 @@ def softmax_classifier() :
 
 
 def parallel_execution():
-    print("starting the parallel execution of FCN pipeline")
+    print("Starting the parallel execution of FCN pipeline")
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        future1 = executor.submit(main_regression())
-        future2 = executor.submit(softmax_classifier())
+        future1 = executor.submit(main_regression)  # Corrected here
+        future2 = executor.submit(softmax_classifier)  # Corrected here
         result1 = future1.result()
         result2 = future2.result()
         print(result1)
         print(result2)
-        print("Both pool are completed successfully and execution is over")
+        print("Both pools completed successfully and execution is over")
     print("This is outside the parallel execution")
+
 parallel_execution()

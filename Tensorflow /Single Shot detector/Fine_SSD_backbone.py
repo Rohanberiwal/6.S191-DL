@@ -8,6 +8,154 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import matplotlib.patches as patches
+import os
+import json
+import numpy as np
+import torch
+import torchvision
+from torch.utils.data import Dataset
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import matplotlib.pyplot as plt
+import cv2
+from torchvision.models import resnet50
+from torchvision.ops import roi_pool
+import torch.nn.functional as F
+import os
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+import numpy as np
+from tensorflow.keras.layers import GlobalAveragePooling2D, Dense
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import os
+import json
+import os
+import json
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+import torch
+import torchvision
+from torch.utils.data import Dataset
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import os
+import json
+import torch
+import torchvision
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import matplotlib.pyplot as plt
+import os
+import json
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import numpy as np
+import os
+import tensorflow as tf
+import os
+import json
+import os
+import json
+import numpy as np
+from tensorflow.keras.applications import ResNet101 
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
+import torch
+import torchvision
+from torch.utils.data import Dataset
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+import os
+from torchvision.ops import roi_pool
+import json
+import torch
+import torchvision
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import matplotlib.pyplot as plt
+import os
+import json
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import functional as F
+from PIL import Image
+import torchvision.transforms as T
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.ops as ops
+import cv2
+import numpy as np
+import json
+from torchvision.models import resnet50
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input
+import matplotlib.pyplot as plt
+from PIL import Image
+import torchvision.transforms as transforms
+import torch
+from torch.autograd import Function
+import pdb
+import numpy as np
+import torch
+import torch.nn.functional as F
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision.ops as ops
+import cv2
+import numpy as np
+import json
+from torchvision.models import resnet50
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input
+import matplotlib.pyplot as plt
+from PIL import Image
+import torchvision.transforms as transforms
+import torch
+from torch.autograd import Function
+import pdb
+import numpy as np
+import torch
+import torch.nn.functional as F 
+import cv2
+from tensorflow.keras.applications.resnet50 import preprocess_input
+import numpy as np
+import os
+import json
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+import matplotlib.patches as patches
 
 root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
@@ -172,7 +320,6 @@ def save_patches(image_dict, save_dir, prefix):
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
 
-# Get file paths of saved patches
 def get_file_paths(directory):
     file_paths = []
     for root, dirs, files in os.walk(directory):
@@ -213,38 +360,79 @@ def data_generator(file_paths, labels, batch_size=32, augment=False):
 
             yield images, batch_labels
 
-def print_feature_maps(image_path, model):
-    try:
-        img = load_img(image_path, target_size=(224, 224))
-        img_array = img_to_array(img)
-        img_array = img_array[np.newaxis, ...]  # Add batch dimension
-        img_array /= 255.0  
+
+def plot_training_history(history):
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Val Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.show()
+
+
+
+from tensorflow.keras.layers import Conv2D
+def multi_scale_generator(enhanced_feature_maps, base_feature_maps):
+    for feature_map in base_feature_maps:
+        # Ensure feature_map has a batch dimension even for single images
+        feature_map_expanded = tf.expand_dims(feature_map, axis=0)
+        
+        # Apply convolutions
+        feature_map_expanded = Conv2D(filters=256, kernel_size=(1, 1), padding='same', activation='relu')(feature_map_expanded)
+        feature_map_expanded = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu')(feature_map_expanded)
+        feature_map_expanded = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu')(feature_map_expanded)
+        
+        # Squeeze out the batch dimension and append to enhanced_feature_maps
+        feature_map_processed = tf.squeeze(feature_map_expanded, axis=0)
+        enhanced_feature_maps.append(feature_map_processed)
     
-        layer_outputs = [layer.output for layer in model.layers]
-        activation_model = Model(inputs=model.input, outputs=layer_outputs)
+    return enhanced_feature_maps
 
-        # Get activations
-        activations = activation_model.predict(img_array)
 
-        # Print and visualize the feature maps
-        for i, activation in enumerate(activations):
-            print(f"Layer {i+1} output shape:", activation.shape)
-            if len(activation.shape) == 4:  # Assuming 4D output (batch_size, height, width, channels)
-                num_filters = activation.shape[-1]
-                plt.figure(figsize=(8, 8))
-                for j in range(num_filters):
-                    plt.subplot(num_filters // 8 + 1, 8, j + 1)
-                    plt.imshow(activation[0, :, :, j], cmap='viridis')
-                    plt.axis('off')
-                plt.suptitle(f"Layer {i+1} Activations")
-                plt.tight_layout()
-                plt.show()
-            else:
-                print(activation)
+def generate_anchor_boxes(base_sizes, aspect_ratios, feature_map_shape):
+    anchor_boxes = []
+    num_boxes = len(base_sizes) * len(aspect_ratios)
+    for i in range(feature_map_shape[0]):
+        for j in range(feature_map_shape[1]):
+            x_center = (j + 0.5) / feature_map_shape[1]
+            y_center = (i + 0.5) / feature_map_shape[0]
+            
+            for base_size in base_sizes:
+                for aspect_ratio in aspect_ratios:
+                    width = base_size * np.sqrt(aspect_ratio)
+                    height = base_size / np.sqrt(aspect_ratio)
+                    
+                    # Define anchor box coordinates
+                    xmin = x_center - width / 2
+                    ymin = y_center - height / 2
+                    xmax = x_center + width / 2
+                    ymax = y_center + height / 2
+                    
+                    # Append anchor box to the list
+                    anchor_boxes.append([xmin, ymin, xmax, ymax])
+    
+    return np.array(anchor_boxes)
 
-    except Exception as e:
-        print(f"Error printing feature maps for image {image_path}: {e}")
-
+def get_output_feature_maps(model, image_path):
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  
+    image = cv2.resize(image, (224, 224))
+    image = image.astype('float32') / 255.0
+    image = np.expand_dims(image, axis=0)
+    intermediate_model = Model(inputs=model.inputs, outputs=[layer.output for layer in model.layers])
+    output_feature_maps = intermediate_model.predict(image)
+    output_feature_maps_np = [np.array(fmap) for fmap in output_feature_maps]
+    return output_feature_maps_np
 
 def create_model(input_shape=(224, 224, 3)):
     model = tf.keras.Sequential([
@@ -261,6 +449,34 @@ def create_model(input_shape=(224, 224, 3)):
     ])
     return model
 
+def plot_anchor_boxes(image_path, anchor_boxes):
+    # Load the image
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB (matplotlib expects RGB)
+
+    # Resize image if necessary (optional)
+    resized_image = cv2.resize(image, (224, 224))
+
+    # Plot the image
+    plt.figure(figsize=(10, 8))
+    plt.imshow(resized_image)
+    ax = plt.gca()
+
+    # Plot anchor boxes
+    for box in anchor_boxes:
+        xmin = int(box[0] * 224)  # Scale coordinates to image size
+        ymin = int(box[1] * 224)
+        xmax = int(box[2] * 224)
+        ymax = int(box[3] * 224)
+        
+        # Draw rectangle
+        rect = plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor='g', facecolor='none')
+        ax.add_patch(rect)
+
+    plt.title('Input Image with Anchor Boxes (in Green)')
+    plt.axis('off')
+    plt.show()
+    
 
 print_mitotic(mitotic_annotation_file)
 print_filename_bbox(non_mitotic_annotation_file)
@@ -304,41 +520,12 @@ history = model.fit(
     epochs=100
 )
 
-def plot_training_history(history):
-    plt.figure(figsize=(12, 4))
-    plt.subplot(1, 2, 1)
-    plt.plot(history.history['accuracy'], label='Train Accuracy')
-    plt.plot(history.history['val_accuracy'], label='Val Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-
-    plt.subplot(1, 2, 2)
-    plt.plot(history.history['loss'], label='Train Loss')
-    plt.plot(history.history['val_loss'], label='Val Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-
-    plt.show()
-
 plot_training_history(history)
-
-def get_output_feature_maps(model, image_path):
-    image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  
-    image = cv2.resize(image, (224, 224))
-    image = image.astype('float32') / 255.0
-    image = np.expand_dims(image, axis=0)
-    intermediate_model = Model(inputs=model.inputs, outputs=[layer.output for layer in model.layers])
-    output_feature_maps = intermediate_model.predict(image)
-    output_feature_maps_np = [np.array(fmap) for fmap in output_feature_maps]
-    return output_feature_maps_np
-
 image_path  = r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"
-feature = []
-featured_map  = get_output_feature_maps(model  , image_path)
-for i, fmap in enumerate(output_feature_maps):
-    features.append(np.array(fmap))
+features = []
+featured_map = get_output_feature_maps(model, image_path)
+
+print(featured_map)
     
-print(np.array(feature))
+print("Pipelien ends")
+

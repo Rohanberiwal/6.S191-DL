@@ -1,15 +1,3 @@
-import os
-import json
-import torch
-import torchvision
-from torch.utils.data import Dataset
-from torchvision.transforms import functional as F
-from PIL import Image
-import torchvision.transforms as T
-standard_dict_mitotic = {}
-standard_dict_non_mitotic = {}
-import os
-import json
 import torch
 import torchvision
 from torch.utils.data import Dataset, DataLoader
@@ -19,13 +7,12 @@ import torchvision.transforms as T
 import matplotlib.pyplot as plt
 import os
 import json
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision.transforms import functional as F
-from PIL import Image
-import torchvision.transforms as T
-import numpy as np
+from PIL import Image, ImageDraw
+import random 
+import torchvision
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
+# Define CustomDataset class
 class CustomDataset(Dataset):
     def __init__(self, mitotic_dict, non_mitotic_dict, transforms=None):
         self.mitotic_dict = mitotic_dict
@@ -73,6 +60,7 @@ class CustomDataset(Dataset):
 
         return img, target
 
+# Function to get transformations
 def get_transform(train):
     transforms = []
     transforms.append(T.ToTensor())
@@ -80,6 +68,7 @@ def get_transform(train):
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
 
+# Function to extract bounding boxes from JSON
 def extract_bounding_box(filename, path_to_file, mitotic_annotation_file, non_mitotic_annotation_file):
     if mitotic_annotation_file in path_to_file:
         annotation_file = mitotic_annotation_file
@@ -105,8 +94,10 @@ def extract_bounding_box(filename, path_to_file, mitotic_annotation_file, non_mi
     else:
         raise ValueError(f"Filename '{filename}' not found in '{annotation_file}'.")
 
+
 def print_mitotic(json_mitotic):
-    print("This is the mitotic printer function")
+    print("Printing mitotic information:")
+    standard_dict_mitotic = {}
     universal_list = []
     with open(json_mitotic, 'r') as f:
         data = json.load(f)
@@ -122,23 +113,20 @@ def print_mitotic(json_mitotic):
             height = shape_attributes.get('height', 'N/A')
 
             print(f"Bounding Box Coordinates: xmin={xmin}, ymin={ymin}, width={width}, height={height}")
-            boundary_box.append(xmin)
-            boundary_box.append(ymin)
-            boundary_box.append(width)
-            boundary_box.append(height)
-            universal_list.append(boundary_box)
-            boundary_box = []
+            boundary_box.append([xmin, ymin, width, height])
+            universal_list.append([xmin, ymin, width, height])
         print("------------------------")
         standard_dict_mitotic[filename.replace('.jpg', '.jpeg')] = universal_list
         universal_list = []
         boundary_box = []
-    print(universal_list)
     return standard_dict_mitotic
 
-def print_filename_bbox(json_file):
-    print("This is the printer filename function for non-mitotic")
+
+def print_non_mitotic(json_non_mitotic):
+    print("Printing non-mitotic information:")
+    standard_dict_non_mitotic = {}
     universal_list = []
-    with open(json_file, 'r') as f:
+    with open(json_non_mitotic, 'r') as f:
         data = json.load(f)
     for image_key, image_data in data.items():
         filename = image_data.get('filename', 'Unknown')
@@ -152,19 +140,14 @@ def print_filename_bbox(json_file):
             height = shape_attributes.get('height', 'N/A')
 
             print(f"Bounding Box Coordinates: xmin={xmin}, ymin={ymin}, width={width}, height={height}")
-            boundary_box.append(xmin)
-            boundary_box.append(ymin)
-            boundary_box.append(width)
-            boundary_box.append(height)
-            universal_list.append(boundary_box)
-            boundary_box = []
+            boundary_box.append([xmin, ymin, width, height])
+            universal_list.append([xmin, ymin, width, height])
         print("------------------------")
-        # Change .jpg to .jpeg in the dictionary key
         standard_dict_non_mitotic[filename.replace('.jpg', '.jpeg')] = universal_list
         universal_list = []
         boundary_box = []
-    print(universal_list)
     return standard_dict_non_mitotic
+
 
 def extract_filenames_from_json(json_file, root):
     with open(json_file) as f:
@@ -173,12 +156,12 @@ def extract_filenames_from_json(json_file, root):
     filename_list = []
     for filename, attributes in data.items():
         filename = filename.replace('.jpeg', '.jpg')
-        img_name = attributes['filename'] 
-        img_path = os.path.join(root, img_name)  
-        file_path  = img_path
+        img_name = attributes['filename']
+        img_path = os.path.join(root, img_name)
         filename_list.append(img_path)
         
     return filename_list
+
 
 def modify_dict_inplace(standard_dict, root):
     keys_to_remove = []
@@ -199,152 +182,73 @@ root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
 
-# Extract filenames and modify dicts
-mitotic_filenames = extract_filenames_from_json(mitotic_annotation_file, root)
-mitotic_output = print_mitotic(mitotic_annotation_file)
-non_mitotic_output = print_filename_bbox(non_mitotic_annotation_file)
+# Load and print mitotic and non-mitotic information
+standard_dict_mitotic = print_mitotic(mitotic_annotation_file)
+standard_dict_non_mitotic = print_non_mitotic(non_mitotic_annotation_file)
 
-modify_dict_inplace(standard_dict_non_mitotic, root)
+# Modify dictionary keys to match image paths
 modify_dict_inplace(standard_dict_mitotic, root)
+modify_dict_inplace(standard_dict_non_mitotic, root)
+print(standard_dict_mitotic.keys())
+print(standard_dict_non_mitotic.keys())
+dataset_keys = list(set(standard_dict_mitotic.keys()).union(set(standard_dict_non_mitotic.keys())))
+print(dataset_keys)
 
-# Create dataset and data loader
-dataset = CustomDataset(standard_dict_mitotic, standard_dict_non_mitotic, transforms=get_transform(train=True))
-data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
+train_size = int(0.7 * len(dataset_keys))
+val_size =  int(0.3*len(dataset_keys))
+common_keys = set(standard_dict_mitotic.keys()).intersection(set(standard_dict_non_mitotic.keys()))
+train_keys = list(common_keys)[:train_size]
+val_keys = list(common_keys)[train_size:]
 
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+# Create datasets using only common keys
+train_dataset = CustomDataset(
+    {key: standard_dict_mitotic[key] for key in train_keys},
+    {key: standard_dict_non_mitotic[key] for key in train_keys},
+    transforms=get_transform(train=True)
+)
 
-# Load a pre-trained model
+val_dataset = CustomDataset(
+    {key: standard_dict_mitotic[key] for key in val_keys},
+    {key: standard_dict_non_mitotic[key] for key in val_keys},
+    transforms=get_transform(train=False)
+)
+train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
+val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-
-# Replace the classifier head
-num_classes = 2  # 1 class (object) + background
+num_classes = 2 
 in_features = model.roi_heads.box_predictor.cls_score.in_features
 model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-
-# Define training parameters
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
 lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+import numpy as np 
+print("Thisis the train loop  ")
 
-
-num_epochs = 20
-losses_per_epoch = []
+num_epochs = 10
+train_losses = []
 
 for epoch in range(num_epochs):
     model.train()
-    running_loss = 0.0
-    for images, targets in data_loader:
-        images = list(image.to(device) for image in images)
+    train_loss_accum = 0.0
+    
+    for images, targets in train_loader:
+        images = [img.to(device) for img in images]
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
-        loss_dict = model(images, targets)
-        losses = sum(loss for loss in loss_dict.values())
-
         optimizer.zero_grad()
-        losses.backward()
+        loss_dict = model(images, targets)
+        total_loss = sum(loss_dict[key].mean() for key in loss_dict.keys())
+        total_loss.backward()
         optimizer.step()
+        train_loss_accum += total_loss.item()
+    train_loss = train_loss_accum / len(train_loader)
+    train_losses.append(train_loss)
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}")
 
-        running_loss += losses.item()
-
-    epoch_loss = running_loss / len(data_loader)
-    losses_per_epoch.append(epoch_loss)
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}')
-
-    lr_scheduler.step()
-
-# Plotting the loss
-plt.figure(figsize=(20, 5))
-plt.plot(range(1, num_epochs + 1), losses_per_epoch, marker='o', linestyle='-')
+plt.plot(train_losses, label='Train Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
-plt.title('Training Loss per Epoch')
-plt.grid(True)
+plt.title('Training Loss')
+plt.legend()
 plt.show()
-
-#Testing phase 
-model.eval()
-
-image_paths = [r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"]
-
-# Define transformations
-transform = T.Compose([
-    T.ToTensor(),
-    T.Resize((800, 800))  
-])
-
-
-for image_path in image_paths:
-    image = Image.open(image_path).convert("RGB")
-    image_tensor = transform(image)
-
-    image_tensor = image_tensor.unsqueeze(0)  
-    image_tensor = image_tensor.to(device)
-    
-    # Perform inference
-    with torch.no_grad():
-        prediction = model(image_tensor)
-
-    print(f'Processed image: {image_path}')
-
-
-
-import torch
-import torchvision.transforms as T
-from PIL import Image, ImageDraw
-import matplotlib.pyplot as plt
-
-# Load the trained model
-model.eval()
-
-# Path to the test image
-test_image_path = r"C:\Users\rohan\OneDrive\Desktop\A00_01.jpg"
-
-# Define transformations
-transform = T.Compose([
-    T.ToTensor(),
-    T.Resize((800, 800))  # Resize image to match training input size
-])
-
-# Load and preprocess the test image
-image = Image.open(test_image_path).convert("RGB")
-image_tensor = transform(image)
-image_tensor = image_tensor.unsqueeze(0)  # Add batch dimension
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-image_tensor = image_tensor.to(device)
-
-# Perform inference
-with torch.no_grad():
-    predictions = model(image_tensor)
-
-# Visualize the result (mitotic objects only)
-def visualize_predictions(image, predictions):
-    draw = ImageDraw.Draw(image)
-
-    # Filter predictions to keep only mitotic objects (class label 1)
-    boxes = predictions[0]['boxes'].cpu().numpy()
-    labels = predictions[0]['labels'].cpu().numpy()
-    scores = predictions[0]['scores'].cpu().numpy()
-
-    # Iterate through predicted boxes
-    for box, label, score in zip(boxes, labels, scores):
-        if label == 1:  # Mitotic label
-            xmin, ymin, xmax, ymax = box
-            color = 'green'
-            draw.rectangle([xmin, ymin, xmax, ymax], outline=color, width=3)
-            draw.text((xmin, ymin), f'Mitotic {score:.2f}', fill=color)
-
-    # Display the image with drawn boxes
-    plt.figure(figsize=(10, 8))
-    plt.imshow(image)
-    plt.axis('off')
-    plt.show()
-
-# Convert image tensor back to PIL image for visualization
-original_image = T.ToPILImage()(image_tensor.squeeze(0).cpu())
-
-# Visualize predictions on the original image
-visualize_predictions(original_image, predictions)
-
-print("Code ends here")

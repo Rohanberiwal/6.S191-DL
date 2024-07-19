@@ -225,6 +225,7 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1
 import numpy as np 
 print("Thisis the train loop  ")
 
+
 num_epochs = 10
 train_losses = []
 
@@ -245,6 +246,7 @@ for epoch in range(num_epochs):
     train_loss = train_loss_accum / len(train_loader)
     train_losses.append(train_loss)
     print(f"Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}")
+
 
 plt.plot(train_losses, label='Train Loss')
 plt.xlabel('Epoch')

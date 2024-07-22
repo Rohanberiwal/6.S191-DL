@@ -1,4 +1,4 @@
-import os
+]import os
 import json
 import numpy as np
 import tensorflow as tf
@@ -8,12 +8,29 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, i
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 
-# Define paths and directories
+
+def predict_probabilities_for_vectors(model, vectors):
+    probabilities = []
+    
+    for vector in vectors:
+        # Preprocess vector (assuming vector is already in the format expected by your model)
+        vector = np.array(vector)  # Convert list to numpy array if needed
+        vector = np.expand_dims(vector, axis=0)  # Add batch dimension if needed
+        
+        # Predict probability
+        probability = model.predict(vector)[0]  # Assuming batch size 1, get the first element
+        probabilities.append(probability)
+    
+    return probabilities
+
+
+
 root = r"C:\Users\rohan\OneDrive\Desktop\Train_mitotic"
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
-mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\MitoticFolder"
-non_mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\NonMitoticFolder"
+mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\Mitotis_Patch"
+non_mitotic_save_dir = r"C:\Users\rohan\OneDrive\Desktop\Non_mitotis_patch"
+
 
 # Load and print annotations into dictionaries
 standard_dict_mitotic = {}
@@ -289,6 +306,34 @@ history = model.fit(
     validation_steps=len(X_val) // batch_size,
     epochs=100
 )
+
+# Train model
+batch_size = 32
+train_gen = data_generator(X_train, y_train, batch_size=batch_size, augment=True)
+val_gen = data_generator(X_val, y_val, batch_size=batch_size)
+
+history = model.fit(
+    train_gen,
+    steps_per_epoch=len(X_train) // batch_size,
+    validation_data=val_gen,
+    validation_steps=len(X_val) // batch_size,
+    epochs=100
+)
+
+train_loss = history.history['loss']
+val_loss = history.history['val_loss']
+train_acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+print("Epoch-wise Training and Validation Loss and Accuracy:")
+for epoch in range(len(train_loss)):
+    print(f"Epoch {epoch + 1}:")
+    print(f"  Training Loss: {train_loss[epoch]:.4f}")
+    print(f"  Validation Loss: {val_loss[epoch]:.4f}")
+    print(f"  Training Accuracy: {train_acc[epoch]:.4f}")
+    print(f"  Validation Accuracy: {val_acc[epoch]:.4f}")
+
+
 
 def plot_training_history(history):
     plt.figure(figsize=(12, 8))

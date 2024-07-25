@@ -421,18 +421,21 @@ def get_augmentation_transforms():
         transforms.ToTensor(),              # Convert PIL Image to Tensor
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize
     ])
-    
+
 def augment_dataloader(dataloader, transform):
     augmented_data = []
     for images, bboxes, labels in dataloader:
         augmented_images = []
         for image in images:
-            image_pil = transforms.ToPILImage()(image)
-            image_aug = transform(image_pil)
-            image_tensor = transforms.ToTensor()(image_aug)
-            augmented_images.append(image_tensor)
-
+            image_pil = transforms.ToPILImage()(image)  
+            image_aug = transform(image_pil)  
+            augmented_images.append(image_aug) 
         augmented_images = torch.stack(augmented_images)
         augmented_data.append((augmented_images, bboxes, labels))
 
     return augmented_data
+
+augmentation_transforms = get_augmentation_transforms()
+augmented_train_data = augment_dataloader(train_loader, augmentation_transforms)
+augmented_val_data = augment_dataloader(val_loader, augmentation_transforms)
+print("This is the code")

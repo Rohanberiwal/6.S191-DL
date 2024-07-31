@@ -1,7 +1,6 @@
 # One-Hot Encoding
 
 ## Overview
-
 One-hot encoding is a technique used in machine learning and data processing to represent categorical variables as binary vectors. It converts categorical data into a format that is easier to work with for various machine learning algorithms.
 
 ### How it Works

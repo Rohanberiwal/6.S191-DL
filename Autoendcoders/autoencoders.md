@@ -1,5 +1,4 @@
 # Autoencoder
-
 ## Overview
 
 An autoencoder is a type of artificial neural network used for unsupervised learning. It consists of two main parts: an encoder and a decoder. The encoder compresses the input data into a latent-space representation (encoding), and the decoder reconstructs the original input data from this representation. 

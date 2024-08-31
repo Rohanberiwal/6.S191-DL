@@ -349,14 +349,6 @@ model = YOLO('yolov8n.pt')  # or use a different pre-trained model if desired
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
-# Define paths
-yaml_path = '/content/yolov8/data.yaml'
-train_img_dir = '/content/yolov8/train/images'
-train_lbl_dir = '/content/yolov8/train/labels'
-val_img_dir = '/content/yolov8/val/images'
-val_lbl_dir = '/content/yolov8/val/labels'
-
-# Create the YAML configuration file
 data_yaml = """
 path: /content/yolov8  # Root directory
 train: train/images  # Path to training images
@@ -376,7 +368,6 @@ print(f"YAML file saved to {yaml_path}")
 # Load the YOLOv8 model
 model = YOLO('yolov8n.pt')  # or use a different pre-trained model if desired
 
-# Define the training configuration
 training_config = {
     'data': yaml_path,
     'epochs': 50,  # number of training epochs
@@ -386,8 +377,64 @@ training_config = {
     'lr0': 0.01,  # initial learning rate
     'momentum': 0.937,  # momentum
     'weight_decay': 0.0005,  # weight decay
+    'val': True,  # Ensure validation is used
+    'val_batch_size': 16  # Batch size for validation
 }
 
-# Train the model
-results = model.train(**training_config)
 print(results)
+from ultralytics import YOLO
+import numpy as np
+from sklearn.metrics import precision_recall_curve, average_precision_score
+
+def validate_model(model, val_img_dir, val_lbl_dir):
+    from ultralytics import YOLO
+    import os
+    import cv2
+    from tqdm import tqdm
+    import matplotlib.pyplot as plt
+    
+    # Define paths
+    image_paths = [os.path.join(val_img_dir, f) for f in os.listdir(val_img_dir) if f.endswith('.jpg')]
+    label_paths = [os.path.join(val_lbl_dir, f.replace('.jpg', '.txt')) for f in os.listdir(val_img_dir) if f.endswith('.jpg')]
+
+    # Check if the number of images matches the number of labels
+    if len(image_paths) != len(label_paths):
+        print("Mismatch between number of images and labels.")
+        return
+
+    # Validate images and labels
+    for img_path, lbl_path in zip(image_paths, label_paths):
+        img = cv2.imread(img_path)
+        if img is None:
+            print(f"Error loading image: {img_path}")
+            continue
+        
+        height, width, _ = img.shape
+        if width <= 0 or height <= 0:
+            print(f"Invalid image dimensions for: {img_path}")
+            continue
+        
+        labels = []
+        if os.path.exists(lbl_path):
+            with open(lbl_path, 'r') as file:
+                for line in file:
+                    labels.append(line.strip().split())
+        else:
+            print(f"No labels found for image: {img_path}")
+            continue
+        
+        # Your validation logic here
+        # For example, running inference on the image
+        results = model(img)
+        
+        # Plot results
+        plt.figure(figsize=(10, 10))
+        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        plt.axis('off')
+        plt.title(f"Results for {os.path.basename(img_path)}")
+        plt.show()
+        
+        print(f"Validated {img_path}")
+
+validate_model(model, val_img_dir, val_lbl_dir)
+print("every code ends for good")

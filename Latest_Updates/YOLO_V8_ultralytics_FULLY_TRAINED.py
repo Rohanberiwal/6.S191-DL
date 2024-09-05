@@ -45,7 +45,7 @@ from PIL import Image
 import torchvision.transforms as T
 import matplotlib.pyplot as plt
 import os
-import math 
+import math
 import json
 import torch
 import torch.optim as optim
@@ -67,6 +67,8 @@ import os
 import json
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
+import zipfile
+import os
 
 def extract_bounding_box(filename, path_to_file, mitotic_annotation_file, non_mitotic_annotation_file):
     if mitotic_annotation_file in path_to_file:
@@ -118,7 +120,7 @@ def print_mitotic(json_mitotic):
 
             print(f"Bounding Box Coordinates: x_min={x_min}, y_min={y_min}, x_max={x_max}, y_max={y_max}")
             universal_list.append([x_min, y_min, x_max, y_max])
-        
+
         standard_dict_mitotic[filename.replace('.jpg', '.jpeg')] = universal_list
         universal_list = []
 
@@ -148,7 +150,7 @@ def print_filename_bbox(json_file):
 
             print(f"Bounding Box Coordinates: x_min={x_min}, y_min={y_min}, x_max={x_max}, y_max={y_max}")
             universal_list.append([x_min, y_min, x_max, y_max])
-        
+
         standard_dict_non_mitotic[filename.replace('.jpg', '.jpeg')] = universal_list
         universal_list = []
 
@@ -161,28 +163,44 @@ def extract_filenames_from_json(json_file, root):
     filename_list = []
     for filename, attributes in data.items():
         filename = filename.replace('.jpeg', '.jpg')
-        img_name = attributes['filename'] 
-        img_path = os.path.join(root, img_name)  
+        img_name = attributes['filename']
+        img_path = os.path.join(root, img_name)
         filename_list.append(img_path)
-        
+
     return filename_list
 
 def modify_dict_inplace(standard_dict, root):
     keys_to_remove = []
     keys_to_add = []
-    
+
     for key in standard_dict.keys():
         key_new = key.replace('.jpeg', '.jpg')
         image_key = os.path.join(root, key_new)
-        
+
         keys_to_remove.append(key)
         keys_to_add.append(image_key)
-    
+
     for old_key, new_key in zip(keys_to_remove, keys_to_add):
         standard_dict[new_key] = standard_dict.pop(old_key)
 
+def extract_zip_file(input_zip_path, output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    with zipfile.ZipFile(input_zip_path, 'r') as zip_ref:
+        zip_ref.extractall(output_dir)
+    print(f"Files extracted to {output_dir}")
 
-root = r'/content/train_mitotic/Train_mitotic'
+
+
+input_zip_path_train = '/content/Train_mitotic.zip'
+output_dir_train = '/content/Train_mitotic'
+extract_zip_file(input_zip_path_train, output_dir_train)
+
+input_zip_path_tester= '/content/tester.zip'
+output_dir_tester = '/content/tester'
+extract_zip_file(input_zip_path_tester, output_dir_tester)
+
+root = r'/content/Train_mitotic/Train_mitotic'
 mitotic_annotation_file = 'mitotic.json'
 non_mitotic_annotation_file = 'NonMitotic.json'
 mitotic_filenames = extract_filenames_from_json(mitotic_annotation_file, root)
@@ -205,27 +223,27 @@ def convert_bbox_to_yolo_format(bbox, img_width, img_height):
     y_center = (y_min + y_max) / 2 / img_height
     width = (x_max - x_min) / img_width
     height = (y_max - y_min) / img_height
-    return [0, x_center, y_center, width, height]  
-    
+    return [0, x_center, y_center, width, height]
+
 def plot_bounding_boxes(standard_dict, root_dir, output_img_dir, output_lbl_dir):
     if not os.path.exists(output_img_dir):
         os.makedirs(output_img_dir)
     if not os.path.exists(output_lbl_dir):
         os.makedirs(output_lbl_dir)
-    
+
     for img_path, bboxes in standard_dict.items():
         img = Image.open(img_path)
         img_width, img_height = img.size
         draw = ImageDraw.Draw(img)
-        
+
         yolo_labels = []
-        
+
         for bbox in bboxes:
             x_min, y_min, x_max, y_max = bbox
             draw.rectangle([x_min, y_min, x_max, y_max], outline="blue", width=2)
             yolo_label = convert_bbox_to_yolo_format(bbox, img_width, img_height)
             yolo_labels.append(yolo_label)
-        
+
 
         img_filename = os.path.basename(img_path)
         img.save(os.path.join(output_img_dir, img_filename))
@@ -254,17 +272,17 @@ def split_dataset(img_dir, lbl_dir, output_train_img_dir, output_train_lbl_dir, 
     os.makedirs(output_train_lbl_dir, exist_ok=True)
     os.makedirs(output_val_img_dir, exist_ok=True)
     os.makedirs(output_val_lbl_dir, exist_ok=True)
-    
+
     all_files = [f for f in os.listdir(img_dir) if f.endswith('.jpg')]
-    random.shuffle(all_files)  
-    split_index = int(len(all_files) * (1 - split_ratio))  
+    random.shuffle(all_files)
+    split_index = int(len(all_files) * (1 - split_ratio))
     train_files = all_files[:split_index]
     val_files = all_files[split_index:]
-    
+
     for file_name in train_files:
         shutil.copy(os.path.join(img_dir, file_name), os.path.join(output_train_img_dir, file_name))
         shutil.copy(os.path.join(lbl_dir, file_name.replace('.jpg', '.txt')), os.path.join(output_train_lbl_dir, file_name.replace('.jpg', '.txt')))
-    
+
     for file_name in val_files:
         shutil.copy(os.path.join(img_dir, file_name), os.path.join(output_val_img_dir, file_name))
         shutil.copy(os.path.join(lbl_dir, file_name.replace('.jpg', '.txt')), os.path.join(output_val_lbl_dir, file_name.replace('.jpg', '.txt')))
@@ -324,7 +342,7 @@ class CustomCallback:
         self.epoch_val_losses.append(val_loss)
         self.epochs.append(epoch)
         print(f"Epoch {epoch}: Loss = {loss}, Val Loss = {val_loss}")
-        
+
         # Track the best model
         if val_loss < self.best_loss:
             self.best_loss = val_loss
@@ -344,8 +362,7 @@ class CustomCallback:
         plt.show()
 
 
-model = YOLO('yolov8n.pt')  # or use a different pre-trained model if desired
-
+model = YOLO('yolov8n.pt')
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
@@ -365,9 +382,7 @@ with open(yaml_path, 'w') as f:
 
 print(f"YAML file saved to {yaml_path}")
 
-# Load the YOLOv8 model
-model = YOLO('yolov8n.pt')  # or use a different pre-trained model if desired
-
+model = YOLO('yolov8n.pt')
 training_config = {
     'data': yaml_path,
     'epochs': 50,  # number of training epochs
@@ -392,7 +407,7 @@ def validate_model(model, val_img_dir, val_lbl_dir):
     import cv2
     from tqdm import tqdm
     import matplotlib.pyplot as plt
-    
+
     # Define paths
     image_paths = [os.path.join(val_img_dir, f) for f in os.listdir(val_img_dir) if f.endswith('.jpg')]
     label_paths = [os.path.join(val_lbl_dir, f.replace('.jpg', '.txt')) for f in os.listdir(val_img_dir) if f.endswith('.jpg')]
@@ -408,12 +423,12 @@ def validate_model(model, val_img_dir, val_lbl_dir):
         if img is None:
             print(f"Error loading image: {img_path}")
             continue
-        
+
         height, width, _ = img.shape
         if width <= 0 or height <= 0:
             print(f"Invalid image dimensions for: {img_path}")
             continue
-        
+
         labels = []
         if os.path.exists(lbl_path):
             with open(lbl_path, 'r') as file:
@@ -422,18 +437,18 @@ def validate_model(model, val_img_dir, val_lbl_dir):
         else:
             print(f"No labels found for image: {img_path}")
             continue
-        
+
         # Your validation logic here
         # For example, running inference on the image
         results = model(img)
-        
+
         # Plot results
         plt.figure(figsize=(10, 10))
         plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         plt.axis('off')
         plt.title(f"Results for {os.path.basename(img_path)}")
         plt.show()
-        
+
         print(f"Validated {img_path}")
 
 validate_model(model, val_img_dir, val_lbl_dir)
@@ -467,7 +482,7 @@ import matplotlib.pyplot as plt
 def evaluate_model(model, test_img_dir):
     # Define paths to the images
     image_paths = [os.path.join(test_img_dir, f) for f in os.listdir(test_img_dir) if f.endswith('.jpg')]
-    
+
     for img_path in tqdm(image_paths):
         # Load the image
         img = cv2.imread(img_path)
@@ -477,18 +492,18 @@ def evaluate_model(model, test_img_dir):
 
         # Run inference on the image
         results = model(img)
-        
+
         # Accessing the predicted boxes, labels, and scores
         for result in results:
             boxes = result.boxes.xyxy.cpu().numpy()  # Bounding boxes
             confidences = result.boxes.conf.cpu().numpy()  # Confidence scores
             class_ids = result.boxes.cls.cpu().numpy()  # Class IDs
-            
+
             # Print detection results
             print(f"Image: {os.path.basename(img_path)}")
             for box, conf, cls_id in zip(boxes, confidences, class_ids):
                 print(f"Class: {cls_id}, Confidence: {conf}, Box: {box}")
-            
+
             # Plot the image with detections
             result_img = result.plot()  # Annotated image
             plt.imshow(result_img)

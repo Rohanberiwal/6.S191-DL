@@ -9,7 +9,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 import torchvision.transforms.functional as F
-
+import torch.optim as optim
 import os
 import os
 import matplotlib.pyplot as plt

@@ -2,6 +2,9 @@ import timm
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
+torch.cuda.empty_cache()
+
+# Load a pre-trained Swin Transformer model
 model_name = 'swin_tiny_patch4_window7_224'
 model = timm.create_model(model_name, pretrained=True)
 print(model)
@@ -9,7 +12,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 import torchvision.transforms.functional as F
-import torch.optim as optim
+
 import os
 import os
 import matplotlib.pyplot as plt
@@ -21,7 +24,7 @@ import os
 import matplotlib.pyplot as plt
 from PIL import Image
 import torchvision.transforms as T
-
+import torch.optim as optim
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 import torchvision.transforms as T
@@ -277,8 +280,6 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
 
     return standard_dict
 
-
-
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, annotations, transform=None):
         self.annotations = annotations
@@ -316,8 +317,6 @@ class AugmentationTransform:
     def __call__(self, image):
         return self.transforms(image)
 
-
-
 input_zip_path_train = '/content/Train_mitotic.zip'
 output_dir_train = '/content/Train_mitotic'
 extract_zip_file(input_zip_path_train, output_dir_train)
@@ -332,15 +331,12 @@ standard_dict_mitotic = print_mitotic(mitotic_annotation_file)
 modify_dict_inplace(standard_dict_mitotic, root)
 
 print(standard_dict_mitotic)
-#plot_image(standard_dict_mitotic)
-
 train_output =  '/content/Faster_RCNN/patch'
 train_labeled = '/content/Faster_RCNN/patch_contents'
 updated_dict = convert_and_save_bounding_boxes(standard_dict_mitotic, train_output, train_labeled)
 print("This is the corrosponding data List")
 print(updated_dict)
-import torch.optim as optim
-from torch.utils.data import DataLoader
+
 
 train_list, val_list = train_test_split(dataset_list, test_size=0.3, random_state=42)
 

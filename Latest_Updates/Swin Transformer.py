@@ -280,6 +280,9 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
 
     return standard_dict
 
+
+
+"""
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, annotations, transform=None):
         self.annotations = annotations
@@ -370,3 +373,105 @@ def train_model(model, dataloader, criterion, optimizer, num_epochs=10):
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}')
 
 train_model(model, train_loader , criterion, optimizer)
+"""
+import os
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
+import torch
+import torchvision.transforms as transforms
+import torch.nn.functional as F
+from sklearn.model_selection import train_test_split
+import torch.optim as optim
+
+# Other functions remain unchanged
+
+class CustomDataset(torch.utils.data.Dataset):
+    def __init__(self, annotations, transform=None):
+        self.annotations = annotations
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.annotations)
+
+    def __getitem__(self, idx):
+        item = self.annotations[idx]
+        image_path = item['path']
+        label = item['label']
+
+        image = Image.open(image_path).convert("RGB")
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
+class AugmentationTransform:
+    def __init__(self):
+        self.transforms = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.RandomRotation(30),
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
+            transforms.Resize(224),
+            transforms.RandomResizedCrop(size=224, scale=(0.8, 1.0)),
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+    def __call__(self, image):
+        return self.transforms(image)
+
+input_zip_path_train = '/content/Train_mitotic.zip'
+output_dir_train = '/content/Train_mitotic'
+extract_zip_file(input_zip_path_train, output_dir_train)
+
+input_zip_path_tester= '/content/tester.zip'
+output_dir_tester = '/content/tester'
+extract_zip_file(input_zip_path_tester, output_dir_tester)
+
+root = '/content/Train_mitotic/Train_mitotic'
+mitotic_annotation_file = 'mitotic.json'
+standard_dict_mitotic = print_mitotic(mitotic_annotation_file)
+modify_dict_inplace(standard_dict_mitotic, root)
+
+print(standard_dict_mitotic)
+train_output =  '/content/Faster_RCNN/patch'
+train_labeled = '/content/Faster_RCNN/patch_contents'
+updated_dict = convert_and_save_bounding_boxes(standard_dict_mitotic, train_output, train_labeled)
+print("This is the corrosponding data List")
+print(updated_dict)
+
+
+train_list, val_list = train_test_split(dataset_list, test_size=0.3, random_state=42)
+
+augmentation_transform = AugmentationTransform()
+train_dataset = CustomDataset(annotations=train_list, transform=augmentation_transform)
+val_dataset = CustomDataset(annotations=val_list, transform=None)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=4)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=4)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model.to(device)
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=1e-4)
+
+def train_model(model, dataloader, criterion, optimizer, num_epochs=10):
+    model.train()
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        for images, labels in dataloader:
+            images, labels = images.to(device), labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item() * images.size(0)
+
+        epoch_loss = running_loss / len(dataloader.dataset)
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}')
+
+train_model(model, train_loader, criterion, optimizer)

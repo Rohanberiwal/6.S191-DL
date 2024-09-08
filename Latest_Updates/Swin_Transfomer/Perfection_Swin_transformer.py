@@ -10,7 +10,14 @@ import torch
 from PIL import Image
 from torchvision import transforms
 import torchvision.transforms.functional as F
-
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import transforms
+from PIL import Image
+import timm
+from torch.utils.tensorboard import SummaryWriter
 import os
 import os
 import matplotlib.pyplot as plt
@@ -214,7 +221,7 @@ import os
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 
-
+dataset_list = []
 dataset_list = []
 
 def convert_bbox_xywh_to_minmax(bbox):
@@ -233,12 +240,11 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
 
     for img_path, bboxes in standard_dict.items():
         img = Image.open(img_path)
-        draw = ImageDraw.Draw(img)
-
         img_width, img_height = img.size
         img_filename = os.path.basename(img_path)
         base_name, _ = os.path.splitext(img_filename)
 
+        # Save cropped image patches without bounding boxes
         bbox_labels = []
         image_patches_info = []
 
@@ -246,9 +252,7 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
             bbox_minmax = convert_bbox_xywh_to_minmax(bbox)
             x_min, y_min, x_max, y_max = bbox_minmax
 
-
-            draw.rectangle([x_min, y_min, x_max, y_max], outline="green", width=2)
-
+            # Save cropped image patch
             cropped_img = img.crop((x_min, y_min, x_max, y_max))
             cropped_img_filename = f"{base_name}_bbox_{i}.png"
             cropped_img_path = os.path.join(output_img_dir, cropped_img_filename)
@@ -264,6 +268,7 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
                 'label': label
             })
 
+        # Save bounding box labels to text file
         txt_filename = f"{base_name}.txt"
         txt_path = os.path.join(output_txt_dir, txt_filename)
         with open(txt_path, 'w') as f:
@@ -274,6 +279,7 @@ def convert_and_save_bounding_boxes(standard_dict, output_img_dir, output_txt_di
 
     return standard_dict
 
+
 import os
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
@@ -282,40 +288,6 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
 import torch.optim as optim
-
-
-class SimpleTransform:
-    def __init__(self):
-        self.transforms = transforms.Compose([
-            transforms.Resize(224),  # Resize to a fixed size
-            transforms.CenterCrop(224),  # Center crop to ensure consistent input size
-            transforms.ToTensor(),  # Convert image to tensor
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize
-        ])
-
-    def __call__(self, image):
-        return self.transforms(image)
-
-# Define your CustomDataset class
-class CustomDataset(torch.utils.data.Dataset):
-    def __init__(self, annotations, transform=None):
-        self.annotations = annotations
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.annotations)
-
-    def __getitem__(self, idx):
-        item = self.annotations[idx]
-        image_path = item['path']
-        label = item['label']
-
-        image = Image.open(image_path).convert("RGB")
-
-        if self.transform:
-            image = self.transform(image)
-        
-        return image, label
 
 
 input_zip_path_train = '/content/Train_mitotic.zip'
@@ -338,58 +310,85 @@ updated_dict = convert_and_save_bounding_boxes(standard_dict_mitotic, train_outp
 print("This is the corrosponding data List")
 print(updated_dict)
 
+print(dataset_list)
 
-train_list, val_list = train_test_split(dataset_list, test_size=0.3, random_state=42)
+import torch
+from torch.utils.data import Dataset
+from PIL import Image
+import torchvision.transforms as transforms
 
-simple_transform = SimpleTransform()
-train_dataset = CustomDataset(annotations=train_list, transform=simple_transform)
-val_dataset = CustomDataset(annotations=val_list, transform=simple_transform)
+import torch
+import torch.optim as optim
+import torch.nn as nn
+from torch.utils.data import DataLoader
+import timm
+from torchvision import transforms
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
-train_loader = torch.utils.data.DataLoader(
-    dataset=train_dataset,
-    batch_size= 1 ,
-    shuffle=True,
-    num_workers=1 ,
-    pin_memory=True
-)
+class CustomDataset(Dataset):
+    def __init__(self, data_list, transform=None):
+        self.data_list = data_list
+        self.transform = transform
 
-val_loader = torch.utils.data.DataLoader(
-    dataset=val_dataset,
-    batch_size= 1 ,
-    shuffle=False,
-    num_workers=1 ,
-    pin_memory=True
-)
+    def __len__(self):
+        return len(self.data_list)
+
+    def __getitem__(self, idx):
+        item = self.data_list[idx]
+        image_path = item['path']
+        bbox = list(map(int, item['bbox'].split()))
+        label = item['label']
+        image = Image.open(image_path).convert('RGB')
+
+        if self.transform:
+            image = self.transform(image)
+
+        bbox = torch.tensor(bbox, dtype=torch.float32)
+        label = torch.tensor(label, dtype=torch.long)
+
+        return {'image': image, 'bbox': bbox, 'label': label}
 
 
+from torchvision import transforms
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+import timm
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+dataset = CustomDataset(dataset_list, transform=transform)
+dataloader = DataLoader(dataset, batch_size= 8 , shuffle=True)
+model = timm.create_model('swin_base_patch4_window7_224', pretrained=True, num_classes=2)  # Ensure num_classes matches your dataset
 model.to(device)
-criterion = torch.nn.CrossEntropyLoss()
+
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-
-train_losses = []
-
-
-def train_model(model, dataloader, criterion, optimizer, num_epochs=50):
+num_epochs = 10
+list_loss = []
+for epoch in range(num_epochs):
     model.train()
-    for epoch in range(num_epochs):
-        running_loss = 0.0
-        for images, labels in dataloader:
-            images, labels = images.to(device), labels.to(device)
+    running_loss = 0.0
+    for batch in dataloader:
+        images = batch['image'].to(device)
+        labels = batch['label'].to(device)
 
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
 
-            running_loss += loss.item() * images.size(0)
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
 
-        epoch_loss = running_loss / len(dataloader.dataset)
-        train_losses.append(epoch_loss)
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}')
+        running_loss += loss.item()
+    list_loss.append(running_loss)
+    print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}")
 
-train_model(model, train_loader, criterion, optimizer)
-print("This is the final code for the Train processes ")
-print(train_losses)
+print('Training complete.')
+print("loss dict is -> " ,list_loss)

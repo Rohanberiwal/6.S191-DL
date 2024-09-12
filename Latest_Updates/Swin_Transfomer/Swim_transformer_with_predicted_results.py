@@ -17,7 +17,11 @@ import os
 import matplotlib.pyplot as plt
 from PIL import Image
 import torchvision.transforms as T
-
+import torch
+from torch.optim import AdamW
+from tqdm import tqdm
+from sklearn.metrics import precision_recall_fscore_support
+from torchmetrics.detection import MeanAveragePrecision
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 import torchvision.transforms as T
@@ -37,16 +41,7 @@ import torch
 from torchvision.io import read_image
 from torchvision.transforms import functional as F
 from PIL import Image
-import torch
-import torchvision
-import timm
-from torch.optim import AdamW
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import transforms
-import random
+
 import torch
 from torchvision import transforms
 from PIL import Image
@@ -336,24 +331,29 @@ class CustomDataset(Dataset):
 
         return image, label
 
-
-
 def collate_fn(batch):
     images, labels = zip(*batch)  # Unzip the batch
     images = torch.stack(images)  # Stack images into a single tensor
     labels = torch.tensor(labels, dtype=torch.long)  # Convert labels to a tensor
     return images, labels
 
-# Model Setup for Swin Transformer
+# Model Setup
 def get_swin_transformer(num_classes):
     model = timm.create_model('swin_base_patch4_window7_224', pretrained=True)
     model.head = torch.nn.Linear(model.head.in_features, num_classes)  # Adjust the final layer
     return model
 
-# Training Function
+import torch
+from sklearn.metrics import precision_recall_fscore_support
+from torch.optim import AdamW
+from tqdm import tqdm
+
+
 def train_one_epoch(model, data_loader, optimizer, device):
     model.train()
     running_loss = 0.0
+    all_predictions = []
+    all_targets = []
 
     for images, labels in tqdm(data_loader, desc="Training Epoch"):
         images = images.to(device)
@@ -367,17 +367,23 @@ def train_one_epoch(model, data_loader, optimizer, device):
 
         running_loss += loss.item()
 
-    epoch_loss = running_loss / len(data_loader)
-    return epoch_loss
+        preds = outputs.argmax(dim=1)  # Assuming classification task
+        all_predictions.extend(preds.cpu().numpy())
+        all_targets.extend(labels.cpu().numpy())
 
-# Evaluation Function
+    epoch_loss = running_loss / len(data_loader)
+
+    # Compute metrics
+    precision, recall, f1, _ = precision_recall_fscore_support(all_targets, all_predictions, average='weighted')
+
+    return epoch_loss, precision, recall, f1  # Ensure these are returned
+
 def evaluate(model, data_loader, device):
     model.eval()
     running_loss = 0.0
-    predictions = []
-    true_labels = []
-    images_list = []
-    
+    all_predictions = []
+    all_targets = []
+
     with torch.no_grad():
         for images, labels in tqdm(data_loader, desc="Evaluating"):
             images = images.to(device)
@@ -387,63 +393,38 @@ def evaluate(model, data_loader, device):
             loss = torch.nn.functional.cross_entropy(outputs, labels)
             
             running_loss += loss.item()
-            
-            # Collect predictions and true labels
-            preds = torch.argmax(outputs, dim=1).cpu().numpy()
-            predictions.extend(preds)
-            true_labels.extend(labels.cpu().numpy())
-            images_list.extend(images.cpu())
-    
+
+            preds = outputs.argmax(dim=1)  # Assuming classification task
+            all_predictions.extend(preds.cpu().numpy())
+            all_targets.extend(labels.cpu().numpy())
+
     epoch_loss = running_loss / len(data_loader)
-    
-    # Visualize predictions and true labels
-    visualize_predictions(images_list, predictions, true_labels)
-    
-    return epoch_loss
+    precision, recall, f1, _ = precision_recall_fscore_support(all_targets, all_predictions, average='weighted')
 
-def visualize_predictions(images, predictions, true_labels):
-    plt.figure(figsize=(15, 15))
-    num_images = len(predictions)
-    
-    for i in range(num_images):
-        plt.subplot(1, num_images, i + 1)
-        img = images[i].permute(1, 2, 0).numpy()  # Convert tensor to numpy array
-        plt.imshow(img)
-        plt.title(f"Pred: {predictions[i]}\nTrue: {true_labels[i]}")
-        plt.axis('off')
-    
-    plt.show()
+    return epoch_loss, precision, recall, f1
 
-# Training Loop with loss tracking
 def train(model, train_loader, val_loader, num_epochs, device):
     model.to(device)
     
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = AdamW(params, lr=0.0001)
-
-    train_losses = []
-    val_losses = []
-
+    
     for epoch in range(num_epochs):
         print(f"Epoch {epoch + 1}/{num_epochs}")
-        train_loss = train_one_epoch(model, train_loader, optimizer, device)
+      
+        train_loss, train_precision, train_recall, train_f1 = train_one_epoch(model, train_loader, optimizer, device)
         print(f"Training Loss: {train_loss:.4f}")
-        train_losses.append(train_loss)
-
-        val_loss = evaluate(model, val_loader, device)
+        print(f"Training Precision: {train_precision:.4f}")
+        print(f"Training Recall: {train_recall:.4f}")
+        print(f"Training F1 Score: {train_f1:.4f}")
+      
+        val_loss, val_precision, val_recall, val_f1 = evaluate(model, val_loader, device)
         print(f"Validation Loss: {val_loss:.4f}")
-        val_losses.append(val_loss)
+        print(f"Validation Precision: {val_precision:.4f}")
+        print(f"Validation Recall: {val_recall:.4f}")
+        print(f"Validation F1 Score: {val_f1:.4f}")
 
-    # Print loss per epoch
-    print("\nTraining Loss per Epoch:")
-    for i, loss in enumerate(train_losses):
-        print(f"Epoch {i + 1}: {loss:.4f}")
 
-    print("\nValidation Loss per Epoch:")
-    for i, loss in enumerate(val_losses):
-        print(f"Epoch {i + 1}: {loss:.4f}")
-
-# Dataset splitting
 def split_dataset(dataset_list, ratio=0.7):
     random.shuffle(dataset_list)
     split_idx = int(len(dataset_list) * ratio)
@@ -452,27 +433,32 @@ def split_dataset(dataset_list, ratio=0.7):
     
     return train_list, val_list
 
-# Define the transformations
+
 transform = transforms.Compose([
     transforms.Resize((224, 224)),  
     transforms.ToTensor()
-]) 
+])
 train_data, validation_data = split_dataset(dataset_list, ratio=0.7)
 
 train_set = CustomDataset(train_data, transforms=transform)
 val_set = CustomDataset(validation_data, transforms=transform)
 
+batch_size = 16  
 train_loader = DataLoader(
     train_set,
+    batch_size=batch_size,  # Specify batch size here
     shuffle=True,
     collate_fn=collate_fn
 )
 
 val_loader = DataLoader(
     val_set,
+    batch_size=batch_size,  
     shuffle=False,
     collate_fn=collate_fn
 )
+print("This is the val loader" ,len(val_loader))
+print("This is the   len  of the train  loader ",len(train_loader))
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

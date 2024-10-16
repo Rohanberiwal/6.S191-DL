@@ -1,7 +1,6 @@
 import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-
 import detectron2
 from detectron2.config import get_cfg
 from detectron2.engine import DefaultTrainer, DefaultPredictor

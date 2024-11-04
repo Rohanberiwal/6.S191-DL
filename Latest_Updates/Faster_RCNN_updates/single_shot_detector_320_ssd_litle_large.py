@@ -1,5 +1,3 @@
-
-
 import os
 import json
 import os
@@ -523,8 +521,33 @@ def validate_boxes(boxes):
             print(f"Invalid box: {box}")
         assert x_max > x_min and y_max > y_min, f"Invalid box {box}"
 
+def inspect_data_loader(data_loader, num_batches=1):
+    for batch_idx, (images, targets) in enumerate(data_loader):
+        if batch_idx >= num_batches:
+            break
 
-num_epochs =  50
+        print(f"Batch {batch_idx + 1}:")
+        print(f"Number of images: {len(images)}")
+
+        # Print the shape of the images
+        for i, img in enumerate(images):
+            print(f"Image {i + 1} shape: {img.shape}")
+
+        # Print the targets
+        for i, target in enumerate(targets):
+            boxes = target['boxes'] if 'boxes' in target else None
+            labels = target['labels'] if 'labels' in target else None
+            print(f"Target {i + 1}:")
+            if boxes is not None:
+                print(f"  Boxes: {boxes.shape} -> {boxes}")
+            if labels is not None:
+                print(f"  Labels: {labels.shape} -> {labels}")
+
+
+inspect_data_loader(trainer_loader, num_batches=2)
+
+"""
+num_epochs =  300
 learning_rate = 1e-5
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.937, weight_decay=1e-4)
 scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
@@ -553,13 +576,85 @@ def train_one_epoch(model, data_loader, optimizer, device, scheduler=None):
         scheduler.step()
 
     return total_loss / len(data_loader)
+"""
+
+
+num_epochs = 300
+learning_rate = 1e-5
+l1_lambda = 1e-5  # Strength for L1 regularization
+weight_decay = 1e-4  # L2 regularization (weight decay)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.937, weight_decay=weight_decay)
+scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+model.to(device)
+
+# Early stopping parameters
+patience = 10  # Number of epochs with no improvement after which training will be stopped
+best_train_loss = float('inf')
+epochs_without_improvement = 0
+
+def train_one_epoch(model, data_loader, optimizer, device, scheduler=None):
+    model.train()
+    total_loss = 0.0
+    for images, targets in data_loader:
+        images = [image.to(device) for image in images]
+        for target in targets:
+            boxes = target['boxes']
+            boxes = convert_boxes_format(boxes)
+            target['boxes'] = boxes
+            validate_boxes(boxes)
+        
+        loss_dict = model(images, targets)
+        losses = sum(loss for loss in loss_dict.values())
+
+        # L1 regularization
+        l1_norm = sum(p.abs().sum() for p in model.parameters())
+        total_loss = losses + l1_lambda * l1_norm
+
+        optimizer.zero_grad()
+        total_loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        optimizer.step()
+
+        total_loss += losses.item()
+    
+    if scheduler:
+        scheduler.step()
+
+    return total_loss / len(data_loader)
 
 training_losses = []
 
 for epoch in range(num_epochs):
     train_loss = train_one_epoch(model, trainer_loader, optimizer, device, scheduler)
     training_losses.append(train_loss)
+    
     print(f"Epoch [{epoch + 1}/{num_epochs}], Training Loss: {train_loss:.4f}")
+
+    # Early stopping logic
+    if train_loss < best_train_loss:
+        best_train_loss = train_loss
+        epochs_without_improvement = 0
+        # Save the model if it improves
+        model_save_path = '/content/Faster_rcnn_model.pth'
+        torch.save(model.state_dict(), model_save_path)
+        print(f"Model saved at epoch {epoch + 1}")
+    else:
+        epochs_without_improvement += 1
+        if epochs_without_improvement >= patience:
+            print("Early stopping triggered.")
+            break 
+
+"""       
+training_losses = []
+
+for epoch in range(num_epochs):
+    train_loss = train_one_epoch(model, trainer_loader, optimizer, device, scheduler)
+    training_losses.append(train_loss)
+    print(f"Epoch [{epoch + 1}/{num_epochs}], Training Loss: {train_loss:.4f}")
+
+
+"""
 
 plt.figure(figsize=(10, 5))
 plt.plot(range(1, num_epochs + 1), training_losses, marker='o')
@@ -589,3 +684,68 @@ for file_name in os.listdir(test):
 
 print("This is the list that has the file for the mitotic testing")
 print(testerfile)
+
+
+import torch
+import cv2
+import matplotlib.pyplot as plt
+
+def preprocess_image(image):
+    input_tensor = torch.tensor(image).permute(2, 0, 1)
+    input_tensor = input_tensor.unsqueeze(0)
+    return input_tensor.float() / 255.0
+
+def run_inference(model, image):
+    model.eval()
+    input_tensor = preprocess_image(image).to(device)
+    with torch.no_grad():
+        detections = model(input_tensor)
+    return detections
+
+def plot_mitotic_detections(image, boxes, scores, threshold=0.5):
+    plt.figure(figsize=(12, 12))
+    plt.imshow(image)
+    ax = plt.gca()
+
+    for box, score in zip(boxes, scores):
+        if score >= threshold:
+            x1, y1, x2, y2 = box.tolist()
+            rect = plt.Rectangle((x1, y1), x2 - x1, y2 - y1, fill=False, edgecolor='red', linewidth=2)
+            ax.add_patch(rect)
+
+            plt.text(x1, y1, f'Score: {score.item():.2f}', color='white', fontsize=12, backgroundcolor='red')
+
+    plt.axis('off')
+    plt.title('Mitotic Detections', fontsize=16)
+    plt.tight_layout()
+    plt.show()
+
+class_names = ['Mitotic']
+threshold = 0.5
+
+for img_path in testerfile:
+    image = cv2.imread(img_path)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    detections = run_inference(model, image_rgb)
+
+    for i in detections:
+        boxes = i["boxes"]
+        labels = i["labels"]
+        scores = i["scores"]
+        mitotic_boxes = []
+        mitotic_scores = []
+
+        for box, label, score in zip(boxes, labels, scores):
+            if label.item() == 1 and score >= threshold:
+                mitotic_boxes.append(box)
+                mitotic_scores.append(score)
+
+        mitotic_boxes = torch.stack(mitotic_boxes) if mitotic_boxes else torch.empty((0, 4))
+        mitotic_scores = torch.tensor(mitotic_scores) if mitotic_scores else torch.empty((0,))
+
+        if mitotic_boxes.size(0) > 0:
+            print("Mitotic Boxes (Threshold > 0.5):", mitotic_boxes)
+            print("Mitotic Scores (Threshold > 0.5):", mitotic_scores)
+            plot_mitotic_detections(image_rgb, mitotic_boxes, mitotic_scores, threshold)
+
+print("End of the code for the best")

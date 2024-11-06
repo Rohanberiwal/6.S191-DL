@@ -2,9 +2,7 @@
 
 ## Introduction
 Ensuring that a machine learning model is making progress and performing optimally requires monitoring key indicators and taking appropriate actions based on observed outcomes.
-
 ---
-
 ## Factors to Consider
 
 ### 1. Convergence at Local Minimum

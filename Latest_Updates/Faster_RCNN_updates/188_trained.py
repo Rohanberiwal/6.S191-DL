@@ -32,6 +32,17 @@ dataset_list = []
 
 from torch.utils.data import DataLoader, random_split
 import torch
+
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import torchvision.transforms as T
+dataset_list = []
+
+from torch.utils.data import DataLoader, random_split
+import torch
 from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
@@ -432,12 +443,12 @@ updated_dict = convert_and_save_bounding_boxes(standard_dict_mitotic, train_outp
 print(updated_dict)
 mitotic_data = collect_mitotic_data(updated_dict)
 print(mitotic_data)
-#augmented_data = augment_mitotic_data(mitotic_data, num_augmentations=10000)
 
 plot_bounding_boxes(mitotic_data, "Bounding Boxes Before Normalization")
 normalized_data = normalize_mitotic_data(mitotic_data)
 plot_bounding_boxes(normalized_data, "Bounding Boxes After Normalization")
 
+from PIL import Image
 
 class CustomMitoticDataset(Dataset):
     def __init__(self, mitotic_data, transforms=None):
@@ -452,23 +463,42 @@ class CustomMitoticDataset(Dataset):
         cropped_image_path = data['cropped_image_path']
         box = data['bounding_box']
         label = data['label']
+
         image = Image.open(cropped_image_path).convert("RGB")
-        box = torch.tensor(box, dtype=torch.float32).unsqueeze(0)
-        label = torch.tensor([label], dtype=torch.int64)
+        original_size = image.size
         if self.transforms is not None:
             image = self.transforms(image)
+        new_size = image.shape[1:]
+        box = torch.tensor(box, dtype=torch.float32).unsqueeze(0)
+        box = resize_bbox(box, original_size, (new_size[1], new_size[0]))
+        label = torch.tensor([label], dtype=torch.int64)
+
         return image, {'boxes': box, 'labels': label}
 
+
+import torchvision.transforms as T
+height = 224
+width = 224
 def get_transform(train):
     transforms = []
-    transforms.append(T.ToTensor())
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
+    transforms.append(T.Resize((height, width)))  # Set your desired height and width
+    transforms.append(T.ToTensor())
     return T.Compose(transforms)
 
+def resize_bbox(bbox, original_size, new_size):
+    original_width, original_height = original_size
+    new_width, new_height = new_size
+    bbox[:, 0] = bbox[:, 0] * (new_width / original_width)  # xmin
+    bbox[:, 1] = bbox[:, 1] * (new_height / original_height)  # ymin
+    bbox[:, 2] = bbox[:, 2] * (new_width / original_width)  # xmax
+    bbox[:, 3] = bbox[:, 3] * (new_height / original_height)  # ymax
+    return bbox
 total_size = len(mitotic_data)
-train_size = int(total_size * 1)  # 80% for training
+train_size = int(total_size * 1)
 train_dataset = CustomMitoticDataset(mitotic_data, transforms=get_transform(train=True))
+
 
 
 from torch.utils.data import DataLoader
@@ -498,13 +528,45 @@ def validate_boxes(boxes):
             print(f"Invalid box: {box}")
         assert x_max > x_min and y_max > y_min, f"Invalid box {box}"
 
+def inspect_data_loader(data_loader, num_batches=1):
+    for batch_idx, (images, targets) in enumerate(data_loader):
+        if batch_idx >= num_batches:
+            break
 
-num_epochs =  10
+        print(f"Batch {batch_idx + 1}:")
+        print(f"Number of images: {len(images)}")
+
+        # Print the shape of the images
+        for i, img in enumerate(images):
+            print(f"Image {i + 1} shape: {img.shape}")
+
+        # Print the targets
+        for i, target in enumerate(targets):
+            boxes = target['boxes'] if 'boxes' in target else None
+            labels = target['labels'] if 'labels' in target else None
+            print(f"Target {i + 1}:")
+            if boxes is not None:
+                print(f"  Boxes: {boxes.shape} -> {boxes}")
+            if labels is not None:
+                print(f"  Labels: {labels.shape} -> {labels}")
+
+
+inspect_data_loader(trainer_loader, num_batches=2)
+
+
+num_epochs = 100
 learning_rate = 1e-5
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.937, weight_decay=1e-4)
+l1_lambda = 1e-5  # Strength for L1 regularization
+weight_decay = 1e-4  # L2 regularization (weight decay)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.937, weight_decay=weight_decay)
 scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
+
+# Early stopping parameters
+patience = 10  # Number of epochs with no improvement after which training will be stopped
+best_train_loss = float('inf')
+epochs_without_improvement = 0
 
 def train_one_epoch(model, data_loader, optimizer, device, scheduler=None):
     model.train()
@@ -516,10 +578,14 @@ def train_one_epoch(model, data_loader, optimizer, device, scheduler=None):
             boxes = convert_boxes_format(boxes)
             target['boxes'] = boxes
             validate_boxes(boxes)
+
         loss_dict = model(images, targets)
         losses = sum(loss for loss in loss_dict.values())
+        l1_norm = sum(p.abs().sum() for p in model.parameters())
+        total_loss = losses + l1_lambda * l1_norm
+
         optimizer.zero_grad()
-        losses.backward()
+        total_loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
 
@@ -530,10 +596,9 @@ def train_one_epoch(model, data_loader, optimizer, device, scheduler=None):
     return total_loss / len(data_loader)
 
 training_losses = []
-
 for epoch in range(num_epochs):
     train_loss = train_one_epoch(model, trainer_loader, optimizer, device, scheduler)
-    training_losses.append(train_loss)
+    training_losses.append(train_loss.detach().cpu().numpy())
     print(f"Epoch [{epoch + 1}/{num_epochs}], Training Loss: {train_loss:.4f}")
 
 plt.figure(figsize=(10, 5))
@@ -545,6 +610,12 @@ plt.grid()
 plt.xticks(range(1, num_epochs + 1))
 plt.show()
 
+model_save_path = '/content/Faster_rcnn_model.pth'
+
+torch.save(model.state_dict(), model_save_path)
+
+print(f'Model saved at {model_save_path}')
+
 
 test =r'/content/tester/tester'
 import os
@@ -553,6 +624,96 @@ testerfile = []
 for file_name in os.listdir(test):
     if file_name.endswith(('.png', '.jpg', '.jpeg')):
         full_path = os.path.join(test, file_name)
+
         testerfile.append(full_path)
 
+print("This is the list that has the file for the mitotic testing")
 print(testerfile)
+
+
+
+
+import torch
+import cv2
+import matplotlib.pyplot as plt
+
+def preprocess_image(image):
+    input_tensor = torch.tensor(image).permute(2, 0, 1)
+    input_tensor = input_tensor.unsqueeze(0)
+    return input_tensor.float() / 255.0
+
+def run_inference(model, image):
+    model.eval()
+    input_tensor = preprocess_image(image).to(device)
+    with torch.no_grad():
+        detections = model(input_tensor)
+    return detections
+
+def convert_bboxes_format(bboxes):
+    converted_bboxes = []
+    for box in bboxes:
+        x_min, y_min, x_max, y_max = box
+        x_center = (x_min + x_max) / 2
+        y_center = (y_min + y_max) / 2
+        width = x_max - x_min
+        height = y_max - y_min
+        converted_bboxes.append([x_center, y_center, width, height])
+    return torch.tensor(converted_bboxes)
+
+def plot_mitotic_detections(image, boxes, scores, threshold=0.5):
+    plt.figure(figsize=(12, 12))
+    plt.imshow(image)
+    ax = plt.gca()
+
+    for box, score in zip(boxes, scores):
+        if score >= threshold:
+            x_center, y_center, width, height = box.tolist()
+            x1 = x_center - width / 2
+            y1 = y_center - height / 2
+            rect = plt.Rectangle((x1, y1), width, height, fill=False, edgecolor='red', linewidth=2)
+            ax.add_patch(rect)
+            plt.text(x1, y1, f'Score: {score.item():.2f}', color='white', fontsize=12, backgroundcolor='red')
+
+    plt.axis('off')
+    plt.title('Mitotic Detections', fontsize=16)
+    plt.tight_layout()
+    plt.show()
+
+class_names = ['Mitotic']
+threshold = 0.57
+
+for img_path in testerfile:
+    image = cv2.imread(img_path)
+    original_size = image.shape[:2]
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    detections = run_inference(model, image_rgb)
+
+    mitotic_boxes = []
+    mitotic_scores = []
+
+    for i in detections:
+        boxes = i["boxes"]
+        labels = i["labels"]
+        scores = i["scores"]
+
+        for box, label, score in zip(boxes, labels, scores):
+            if label.item() == 1 and score >= threshold:
+                mitotic_boxes.append(box)
+                mitotic_scores.append(score)
+
+    mitotic_boxes = torch.stack(mitotic_boxes) if mitotic_boxes else torch.empty((0, 4))
+    mitotic_scores = torch.tensor(mitotic_scores) if mitotic_scores else torch.empty((0,))
+    print("This is the box in the x y x y format")
+    plot_mitotic_detections(image_rgb, mitotic_boxes, mitotic_scores, threshold)
+
+
+    if mitotic_boxes.size(0) > 0:
+        mitotic_boxes_converted = convert_bboxes_format(mitotic_boxes)
+
+        print("Mitotic Boxes (Threshold > 0.57):", mitotic_boxes_converted)
+        print("Mitotic Scores (Threshold > 0.57):", mitotic_scores)
+        plot_mitotic_detections(image_rgb, mitotic_boxes_converted, mitotic_scores, threshold)
+
+
+print("End of the code for the best")

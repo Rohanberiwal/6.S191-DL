@@ -1,5 +1,4 @@
 ### Convex Objective Function in SVMs
-
 Support Vector Machines (SVMs) use a convex optimization approach to find the optimal hyperplane that separates classes in a dataset with the maximum margin.
 
 - **Objective Function**: SVMs maximize the margin between support vectors of different classes. The objective function is convex, ensuring efficient convergence to the global optimum.

@@ -2,6 +2,7 @@ import timm
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
+
 torch.cuda.empty_cache()
 model_name = 'swin_tiny_patch4_window7_224'
 model = timm.create_model(model_name, pretrained=True)
